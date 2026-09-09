@@ -50,6 +50,17 @@ describe('architecture source-import boundaries (eslint.config.js)', () => {
     expect(boundaryViolations.length).toBeGreaterThan(0);
   });
 
+  it('rejects packages/creative-graph importing @cios/application (forbidden)', async () => {
+    const messages = await lint(
+      'packages/creative-graph/src/__fixture__.ts',
+      "import { thing } from '@cios/application';\nexport const used = thing;\n",
+    );
+    const boundaryViolations = messages.filter(
+      (m) => m.ruleId === 'no-restricted-imports' && m.message.includes('@cios/application'),
+    );
+    expect(boundaryViolations.length).toBeGreaterThan(0);
+  });
+
   it('rejects apps/worker dynamically importing @cios/domain (forbidden)', async () => {
     const messages = await lint(
       'apps/worker/src/__fixture__.ts',

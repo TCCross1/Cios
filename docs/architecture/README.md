@@ -16,8 +16,12 @@ for CIOS.
   machine-readable form of the Constitution's dependency-direction rules
   (section U). Consumed by `pnpm arch:check`
   (`scripts/check-architecture.mjs`) and by the ESLint source-import
-  boundary rules in `eslint.config.js`, so dependency direction is
-  mechanically enforced rather than convention-only (Directive 002R).
+  boundary rules in `eslint.config.js` (which discover each package's
+  source directory from the workspace rather than a second manually
+  maintained map), so dependency direction is mechanically enforced rather
+  than convention-only (Directive 002R; hardened to fail closed on
+  malformed manifests, all four dependency-manifest fields, and
+  policy/workspace drift by Directive 002R2).
 
 Product-level architecture (Creative Intelligence Kernel, Spark Engine,
 Creation Graph domain entities, Canon Ledger, Story Genome, and related

@@ -194,7 +194,7 @@ Future CIOS agents must have **bounded responsibilities**.
   mutate it.
 - Most AI operations should produce structured findings, recommendations,
   hypotheses, drafts, or proposals rather than silently mutating
-  authoritative state (see §A/§F, Creator Authority and Deterministic
+  authoritative state (see §B/§F, Creator Authority and Deterministic
   Truth).
 - No future agent may become an unbounded, generic "do everything"
   intelligence simply because a model is capable of broad reasoning.
