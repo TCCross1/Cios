@@ -67,17 +67,18 @@ with no product logic. Dependency direction between packages follows
 Run from the repository root; each operates across the whole workspace
 unless noted otherwise.
 
-| Script              | Purpose                                                          |
-| ------------------- | ---------------------------------------------------------------- |
-| `pnpm dev`          | Run `apps/web` in dev mode (the primary interactive workspace)   |
-| `pnpm build`        | Build every app/package (`pnpm -r run build`, topological order) |
-| `pnpm start`        | Run the built `apps/api` server (`node dist/index.js`)           |
-| `pnpm test`         | Run the test suite once across the workspace (Vitest)            |
-| `pnpm test:watch`   | Run the test suite in watch mode                                 |
-| `pnpm typecheck`    | Typecheck every app/package (`pnpm -r run typecheck`)            |
-| `pnpm lint`         | Run ESLint across the whole repository                           |
-| `pnpm format`       | Format the repository with Prettier                              |
-| `pnpm format:check` | Check formatting without writing changes                         |
+| Script              | Purpose                                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
+| `pnpm dev`          | Run `apps/web` in dev mode (the primary interactive workspace)                                      |
+| `pnpm build`        | Build every app/package (`pnpm -r run build`, topological order)                                    |
+| `pnpm start`        | Run the built `apps/api` server (`node dist/index.js`)                                              |
+| `pnpm test`         | Run the test suite once across the workspace (Vitest)                                               |
+| `pnpm test:watch`   | Run the test suite in watch mode                                                                    |
+| `pnpm typecheck`    | Typecheck every app/package (`pnpm -r run typecheck`)                                               |
+| `pnpm arch:check`   | Validate `@cios/*` package-manifest dependencies against `docs/architecture/dependency-policy.json` |
+| `pnpm lint`         | Run ESLint across the whole repository (also enforces `@cios/*` source-import boundaries)           |
+| `pnpm format`       | Format the repository with Prettier                                                                 |
+| `pnpm format:check` | Check formatting without writing changes                                                            |
 
 To target a single app/package, use pnpm's `--filter` flag, e.g.:
 

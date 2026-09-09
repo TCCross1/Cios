@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Machine-readable CIOS internal (@cios/*) dependency-direction policy. Consumed by scripts/check-architecture.mjs to validate package.json workspace dependencies, and mirrored by eslint.config.js to validate source-level imports. Any change to this graph is an architecture decision and must be reflected in docs/architecture/CONSTITUTION.md (section U, Dependency Direction) and, where applicable, a new/updated ADR.",
+  "packages": {
+    "@cios/domain": {
+      "allowedDependencies": []
+    },
+    "@cios/contracts": {
+      "allowedDependencies": []
+    },
+    "@cios/config": {
+      "allowedDependencies": []
+    },
+    "@cios/testkit": {
+      "allowedDependencies": []
+    },
+    "@cios/creative-graph": {
+      "allowedDependencies": ["@cios/domain"]
+    },
+    "@cios/provenance": {
+      "allowedDependencies": ["@cios/domain"]
+    },
+    "@cios/agent-runtime": {
+      "allowedDependencies": ["@cios/contracts"]
+    },
+    "@cios/application": {
+      "allowedDependencies": [
+        "@cios/domain",
+        "@cios/contracts",
+        "@cios/creative-graph",
+        "@cios/provenance"
+      ]
+    },
+    "@cios/infrastructure": {
+      "allowedDependencies": [
+        "@cios/domain",
+        "@cios/application",
+        "@cios/contracts",
+        "@cios/config"
+      ]
+    },
+    "@cios/api": {
+      "allowedDependencies": [
+        "@cios/application",
+        "@cios/infrastructure",
+        "@cios/contracts",
+        "@cios/config"
+      ]
+    },
+    "@cios/worker": {
+      "allowedDependencies": [
+        "@cios/application",
+        "@cios/infrastructure",
+        "@cios/agent-runtime",
+        "@cios/contracts",
+        "@cios/config"
+      ]
+    },
+    "@cios/web": {
+      "allowedDependencies": ["@cios/contracts"]
+    }
+  }
+}

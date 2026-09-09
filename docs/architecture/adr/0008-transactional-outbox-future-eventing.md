@@ -10,7 +10,7 @@ CIOS will eventually need to notify other processes (workers, search
 indexers, projections, notification systems) when canonical state changes,
 without losing events if a consumer is briefly unavailable, and without
 introducing a message broker before there is a real, measured need for
-one (Constitution §I, §J).
+one (Constitution §L, §M).
 
 ## Decision
 

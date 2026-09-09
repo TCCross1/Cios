@@ -1,6 +1,6 @@
 # @cios/creative-graph
 
-Architectural boundary for the future Creative Intelligence Graph (CIG) domain model (Constitution, section B). The CIG is a domain model, not a database technology — no graph database is adopted here. No CIG entities (nodes/edges/relationships) are defined yet; see ADR 0005.
+Architectural boundary for the future Creative Intelligence Graph (CIG) domain model (Constitution, section C). The CIG is a domain model, not a database technology — no graph database is adopted here. No CIG entities (nodes/edges/relationships) are defined yet; see ADR 0005.
 
 ## Status
 

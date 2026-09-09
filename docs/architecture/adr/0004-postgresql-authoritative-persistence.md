@@ -8,7 +8,7 @@ Accepted
 
 CIOS needs one authoritative persistence system for canonical structured
 application data: entities, relationships, versions, provenance,
-permissions, jobs, and references (Constitution §B, §C, §G). The product
+permissions, jobs, and references (Constitution §C, §D, §J). The product
 name references a "Creative Intelligence Graph," which creates a
 temptation to reach for a graph database by default.
 
@@ -29,7 +29,7 @@ application`.
 - Large binary assets are not stored in PostgreSQL (see ADR 0009); only
   their metadata/lineage is.
 - Semantic search, if introduced, targets PostgreSQL + `pgvector` before a
-  dedicated vector database (Constitution §H).
+  dedicated vector database (Constitution §K).
 - A specialized graph database (e.g. Neo4j) may be introduced later, but
   only behind the same domain/application interfaces, and only if
   measured query requirements (not naming coincidence) justify it.
@@ -38,7 +38,7 @@ application`.
 
 - **Neo4j / dedicated graph database as primary store**: rejected as the
   _default_ — the CIG is a domain model, not a database technology
-  (Constitution §B). Adopting a graph database prematurely would couple
+  (Constitution §C). Adopting a graph database prematurely would couple
   the domain model to a niche technology before real query patterns are
   known, and would complicate transactional consistency with the rest of
   canonical state (permissions, jobs, versions) that fits naturally in a

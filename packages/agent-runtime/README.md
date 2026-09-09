@@ -1,6 +1,6 @@
 # @cios/agent-runtime
 
-Boundary through which AI/agent/tool execution happens, sitting outside the pure domain layer (Constitution, section E; ADR 0010). Produces typed proposals/results defined in `@cios/contracts` — it never mutates canonical state directly. No provider adapters are implemented yet.
+Boundary through which AI/agent/tool execution happens, sitting outside the pure domain layer (Constitution, section G; ADR 0010). Produces typed proposals/results defined in `@cios/contracts` — it never mutates canonical state directly. No provider adapters are implemented yet.
 
 ## Status
 

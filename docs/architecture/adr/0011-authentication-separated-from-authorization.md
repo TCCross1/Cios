@@ -47,7 +47,7 @@ implemented, in Directive 002.
   directly**: rejected — couples CIOS's permission model to a specific
   provider's data shape and makes provider migration expensive.
 - **Enforce authorization only in the frontend**: rejected outright — an
-  explicit security requirement in the Constitution (§O): "authorization
+  explicit security requirement in the Constitution (§R): "authorization
   enforced server-side."
 
 ## What Would Justify Revisiting

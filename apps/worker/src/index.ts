@@ -2,7 +2,7 @@
  * @cios/worker entry point.
  *
  * This is the composition root for CIOS's background job runtime
- * (Constitution, section J). It intentionally implements no jobs and is
+ * (Constitution, section M). It intentionally implements no jobs and is
  * not bound to any queue technology yet — Directive 002 is architecture/
  * topology only. This placeholder proves the dev/build/start toolchain
  * works for this runtime.

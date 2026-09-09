@@ -1,6 +1,6 @@
 # @cios/testkit
 
-Shared test fixtures/harnesses for other packages, used only as a dev dependency. Exists as a named, bounded-purpose package so shared test helpers do not end up in a generic `utils` or `common` dumping ground (Constitution, section Q). No fixtures are implemented yet.
+Shared test fixtures/harnesses for other packages, used only as a dev dependency. Exists as a named, bounded-purpose package so shared test helpers do not end up in a generic `utils` or `common` dumping ground (Constitution, section T). No fixtures are implemented yet.
 
 ## Status
 

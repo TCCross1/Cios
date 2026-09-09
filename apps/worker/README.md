@@ -1,7 +1,7 @@
 # @cios/worker
 
 The CIOS background/long-running job runtime, separate from interactive
-API request execution (Constitution, section J). Intended future home for
+API request execution (Constitution, section M). Intended future home for
 AI generation, media processing, rendering, analysis, ingestion, indexing,
 and production-workflow jobs, and eventually the Transactional Outbox
 relay/consumer described in ADR 0008.

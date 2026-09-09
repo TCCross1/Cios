@@ -9,7 +9,7 @@ Accepted
 CIOS must be able to answer, for any meaningful committed creative change:
 what changed, who/what proposed and approved it, what source material and
 prior version it derived from, what tools/models participated, when it
-happened, and what version became canonical (Constitution §D). A full
+happened, and what version became canonical (Constitution §E). A full
 event-sourcing architecture (every domain object as a pure event-sourced
 aggregate, canonical state always derived by replaying events) is one way
 to get this, but is a heavy, invasive architectural commitment.

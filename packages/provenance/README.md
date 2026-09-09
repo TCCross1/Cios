@@ -1,6 +1,6 @@
 # @cios/provenance
 
-Architectural boundary for CIOS's versioned canonical state + append-oriented provenance/audit history (Constitution, section D; ADR 0007). No provenance schema or storage is implemented yet.
+Architectural boundary for CIOS's versioned canonical state + append-oriented provenance/audit history (Constitution, section E; ADR 0007). No provenance schema or storage is implemented yet.
 
 ## Status
 

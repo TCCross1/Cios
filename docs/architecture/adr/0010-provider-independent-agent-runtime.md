@@ -11,7 +11,7 @@ generation, reasoning/research, embeddings, image/audio/video generation,
 external tool execution). Coupling the domain or application layers
 directly to a specific provider SDK would make CIOS architecturally
 dependent on that vendor's API shape, pricing model, and availability, and
-would violate the domain-layer isolation rule in the Constitution (§E).
+would violate the domain-layer isolation rule in the Constitution (§G).
 
 ## Decision
 
@@ -44,7 +44,7 @@ dependency graph.
 
 - **Import a provider SDK directly wherever generation is needed**:
   rejected — this is precisely what the Constitution's domain-isolation
-  rule and provider-independence principle (§E, §F) forbid; it would
+  rule and provider-independence principle (§G, §I) forbid; it would
   scatter vendor lock-in throughout the codebase.
 - **A single mega "AI service" class with vendor-specific branches
   everywhere**: rejected — mixes capability dispatch with vendor

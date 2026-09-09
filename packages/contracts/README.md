@@ -1,6 +1,6 @@
 # @cios/contracts
 
-Wire-level types shared with external clients (e.g. the web app and any future API consumers). Contracts must never leak persistence-specific models from the domain or infrastructure layers (Constitution, section R). This package has no runtime dependencies — it only exports types/shapes.
+Wire-level types shared with external clients (e.g. the web app and any future API consumers). Contracts must never leak persistence-specific models from the domain or infrastructure layers (Constitution, section U). This package has no runtime dependencies — it only exports types/shapes.
 
 ## Status
 

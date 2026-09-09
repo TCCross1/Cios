@@ -18,4 +18,26 @@ conventions, coding standards, release process, and operational runbooks.
 - Repository topology: `apps/{web,api,worker}` (deployable runtimes) and
   `packages/{domain,application,contracts,creative-graph,provenance,
 agent-runtime,infrastructure,config,testkit}` (internal libraries), per
-  the Constitution's dependency-direction rules (section R).
+  the Constitution's dependency-direction rules (section U).
+- **Dependency direction is mechanically enforced, not just documented**
+  (Directive 002R):
+  - `pnpm arch:check` (`scripts/check-architecture.mjs`) validates every
+    workspace `package.json`'s declared `@cios/*` dependencies against
+    `docs/architecture/dependency-policy.json`, and detects unknown
+    internal package names and circular internal dependencies. It is a
+    required CI gate (`.github/workflows/ci.yml`), run before typecheck.
+  - `pnpm lint` (`eslint.config.js`) additionally enforces the same policy
+    at the **source-import** level via `no-restricted-imports` (static,
+    `export ... from`, and type-only imports) and `no-restricted-syntax`
+    (dynamic `import()`), scoped per package/app directory.
+  - Both mechanisms read from the same policy file
+    (`docs/architecture/dependency-policy.json`), so there is a single
+    source of truth for "who may depend on whom."
+  - **Adding a new internal package or changing an allowed dependency is an
+    architecture decision.** Update
+    `docs/architecture/dependency-policy.json` (which drives both
+    `arch:check` and the ESLint boundary rules) and record the reasoning in
+    an ADR — do not bypass the checker with `eslint-disable`, `ts-ignore`,
+    wildcard allowlists, or other escape hatches.
+  - Tests for the checker itself and the ESLint boundary rules live in
+    `scripts/tests/`.
