@@ -5,8 +5,6 @@
     "types": ["node"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "src",
-    "outDir": "dist",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
@@ -19,7 +17,5 @@
     "sourceMap": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  }
 }

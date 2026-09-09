@@ -2,7 +2,7 @@
 
 Status: **Authoritative** (established by Directive 002)
 
-This document is the highest-level *technical architecture* authority for
+This document is the highest-level _technical architecture_ authority for
 CIOS, beneath the CIOS product/master context. Every later directive,
 package, and pull request must be consistent with it. If a future
 requirement conflicts with an invariant here, the conflict must be
@@ -55,7 +55,7 @@ database merely because the word "Graph" appears in the product name.
 persistence system for structured canonical application data. Graph-shaped
 relationships are initially persisted in PostgreSQL using explicit
 nodes/edges/relationship tables and ordinary relational structures. A
-specialized graph database may be introduced later *only if* measured query
+specialized graph database may be introduced later _only if_ measured query
 requirements justify it (see ADR 0005).
 
 No CIG business entities (nodes, edge types, story/character/world
@@ -133,7 +133,7 @@ proposals/evidence/results — they never directly mutate canonical state.
 
 CIOS must not architect itself around any single AI vendor.
 Provider-specific integrations belong behind explicit adapters in
-`packages/infrastructure`. Core contracts represent *capabilities*, such as:
+`packages/infrastructure`. Core contracts represent _capabilities_, such as:
 
 - text generation
 - structured generation

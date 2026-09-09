@@ -22,7 +22,7 @@ poor fit for streaming/CDN delivery).
   source binaries.
 
 Object storage is never treated as the metadata authority — the database
-row is the source of truth for what an asset *is* and how it relates to
+row is the source of truth for what an asset _is_ and how it relates to
 the rest of canonical state; object storage only holds the bytes. No
 object storage integration is implemented in Directive 002.
 

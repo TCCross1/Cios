@@ -25,7 +25,7 @@ choice for when persistence is introduced.
 
 - `packages/infrastructure` will eventually own the PostgreSQL adapter(s)
   implementing interfaces defined by `packages/domain`/`packages/
-  application`.
+application`.
 - Large binary assets are not stored in PostgreSQL (see ADR 0009); only
   their metadata/lineage is.
 - Semantic search, if introduced, targets PostgreSQL + `pgvector` before a
@@ -37,7 +37,7 @@ choice for when persistence is introduced.
 ## Alternatives Considered
 
 - **Neo4j / dedicated graph database as primary store**: rejected as the
-  *default* — the CIG is a domain model, not a database technology
+  _default_ — the CIG is a domain model, not a database technology
   (Constitution §B). Adopting a graph database prematurely would couple
   the domain model to a niche technology before real query patterns are
   known, and would complicate transactional consistency with the rest of

@@ -1,0 +1,24 @@
+{
+  "name": "@cios/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CIOS primary interactive web workspace (React + Vite). Architecture foundation only, Directive 002 — no product UI.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@cios/contracts": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@vitejs/plugin-react": "6.1.1",
+    "vite": "8.2.2"
+  }
+}
