@@ -405,7 +405,7 @@ apps/
   worker/         Background/long-running job runtime (composition root)
 
 packages/
-  domain/            Pure domain rules — zero external dependencies
+  domain/            Pure domain rules — no outward CIOS architectural dependencies
   application/        Use-case orchestration across domain concerns
   contracts/          Wire-level types shared with external clients
   creative-graph/      CIG domain model boundary (no entities yet)

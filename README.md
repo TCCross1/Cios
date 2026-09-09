@@ -41,7 +41,7 @@ apps/
   worker/   Background/long-running job runtime
 
 packages/
-  domain/            Pure domain rules — zero external dependencies
+  domain/            Pure domain rules — no outward CIOS architectural dependencies
   application/        Use-case orchestration across domain concerns
   contracts/          Wire-level types shared with external clients
   creative-graph/      Creative Intelligence Graph domain boundary (no entities yet)
@@ -98,5 +98,6 @@ it is already excluded via `.gitignore`.
 
 ## Quality gates
 
-CI (`.github/workflows/ci.yml`) runs install, typecheck, lint, format check,
-tests, and a production build on every push and pull request.
+CI (`.github/workflows/ci.yml`) runs install, an architecture check
+(`pnpm arch:check`), typecheck, lint, format check, tests, and a production
+build on every push and pull request.

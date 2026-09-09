@@ -1,7 +1,7 @@
 /**
  * @cios/domain
  *
- * Pure domain rules for CIOS. Expresses core domain concepts and invariants with zero external dependencies: no web frameworks, no database drivers, no provider SDKs, no other CIOS packages. This is the innermost layer of the dependency direction defined in `docs/architecture/CONSTITUTION.md` (section R).
+ * Pure domain rules for CIOS. Expresses core domain concepts and invariants with no outward CIOS architectural dependencies: no web frameworks, no database drivers, no provider SDKs, no other CIOS packages. This is the innermost layer of the dependency direction defined in `docs/architecture/CONSTITUTION.md` (section U).
  *
  * This module is intentionally empty of product logic. It exists only to
  * make the package a valid, buildable, typed TypeScript project during
