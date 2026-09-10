@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { captureSpark } from '../src/spark/capture/capture-spark.js';
 import { createSparkRef } from '../src/spark/references/spark-ref.js';
 import { generateSparkId } from '../src/spark/ids/spark-id.js';
-import { createEntityScope, generateUniverseId, generateWorkId, DomainValidationError } from '@cios/domain';
+import {
+  createEntityScope,
+  generateUniverseId,
+  generateWorkId,
+  DomainValidationError,
+} from '@cios/domain';
 import { createProvenanceRecord } from '@cios/provenance';
 
 function makeCreatorOriginalRecord(universeId: ReturnType<typeof generateUniverseId>) {

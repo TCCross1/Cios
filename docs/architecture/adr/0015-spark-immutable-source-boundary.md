@@ -158,7 +158,7 @@ policy change was required.
     machine-readable contract; human-readable messages are not.
 
 15. **`packages/application/tsconfig.tests.json`** (`include: ["src",
-    "tests"]`) was added, and `packages/application/package.json`'s
+"tests"]`) was added, and `packages/application/package.json`'s
     `typecheck` script now runs both `tsconfig.json` and
     `tsconfig.tests.json`, mirroring the fix ADR 0013/0014 document for
     `@cios/domain`/`@cios/provenance` — otherwise `@ts-expect-error`

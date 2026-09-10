@@ -9,9 +9,18 @@ import {
   type UniverseId,
   type UtcTimestamp,
 } from '@cios/domain';
-import { createProvenanceRef, isProvenanceType, type ProvenanceRecord, type ProvenanceRef } from '@cios/provenance';
+import {
+  createProvenanceRef,
+  isProvenanceType,
+  type ProvenanceRecord,
+  type ProvenanceRef,
+} from '@cios/provenance';
 import { createSparkId, generateSparkId, isSparkId, type SparkId } from '../ids/spark-id.js';
-import { createSparkSource, type SparkSource, type SparkSourceInput } from '../source/spark-source.js';
+import {
+  createSparkSource,
+  type SparkSource,
+  type SparkSourceInput,
+} from '../source/spark-source.js';
 import type { Spark } from './spark.js';
 
 const ERROR_SCOPE = 'spark_capture';
@@ -103,7 +112,10 @@ function resolveScope(input: unknown): EntityScope {
  * caller's TypeScript type assertion: a runtime-malformed
  * `provenanceRecord` (even one that bypasses TypeScript) fails here.
  */
-function resolveProvenanceRef(provenanceRecord: unknown, scopeUniverseId: UniverseId): ProvenanceRef {
+function resolveProvenanceRef(
+  provenanceRecord: unknown,
+  scopeUniverseId: UniverseId,
+): ProvenanceRef {
   if (typeof provenanceRecord !== 'object' || provenanceRecord === null) {
     throw new DomainValidationError(
       `${ERROR_SCOPE}.provenance_record_malformed`,

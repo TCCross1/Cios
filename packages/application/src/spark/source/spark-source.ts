@@ -48,11 +48,7 @@ export interface FileSparkSource {
  * provenance relationship (Directive 005, section 8).
  */
 export type SparkSource =
-  | TextSparkSource
-  | VoiceSparkSource
-  | ImageSparkSource
-  | LinkSparkSource
-  | FileSparkSource;
+  TextSparkSource | VoiceSparkSource | ImageSparkSource | LinkSparkSource | FileSparkSource;
 
 /** Discriminated input shapes accepted by {@link createSparkSource}. */
 export type SparkSourceInput =

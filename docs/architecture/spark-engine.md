@@ -67,13 +67,13 @@ synonym (`mixed`, `ai`, `other`, `generated`) is ever accepted.
 A discriminated union, keyed by `modality`, of exactly one raw
 inspiration payload per `Spark`:
 
-| Modality | Shape                                  | Notes                                                     |
-| -------- | --------------------------------------- | ---------------------------------------------------------- |
-| `text`   | `{ modality: 'text', content: string }` | `content` is stored byte-for-byte exact — never trimmed, normalized, or otherwise transformed. Only rejects empty/whitespace-only input. |
-| `voice`  | `{ modality: 'voice', resourceRef: SparkResourceRef }` | Opaque reference to a future voice asset. No transcription happens here. |
-| `image`  | `{ modality: 'image', resourceRef: SparkResourceRef }` | Opaque reference to a future image asset. No OCR/vision happens here. |
-| `link`   | `{ modality: 'link', url: string }`     | `url` is stored exactly as supplied (leading/trailing whitespace preserved). Only `http:`/`https:` URLs validate; validation trims a local view of the string, but the stored value is never trimmed or otherwise normalized. |
-| `file`   | `{ modality: 'file', resourceRef: SparkResourceRef }` | Opaque reference to a future file asset. No filesystem access happens here. |
+| Modality | Shape                                                  | Notes                                                                                                                                                                                                                         |
+| -------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text`   | `{ modality: 'text', content: string }`                | `content` is stored byte-for-byte exact — never trimmed, normalized, or otherwise transformed. Only rejects empty/whitespace-only input.                                                                                      |
+| `voice`  | `{ modality: 'voice', resourceRef: SparkResourceRef }` | Opaque reference to a future voice asset. No transcription happens here.                                                                                                                                                      |
+| `image`  | `{ modality: 'image', resourceRef: SparkResourceRef }` | Opaque reference to a future image asset. No OCR/vision happens here.                                                                                                                                                         |
+| `link`   | `{ modality: 'link', url: string }`                    | `url` is stored exactly as supplied (leading/trailing whitespace preserved). Only `http:`/`https:` URLs validate; validation trims a local view of the string, but the stored value is never trimmed or otherwise normalized. |
+| `file`   | `{ modality: 'file', resourceRef: SparkResourceRef }`  | Opaque reference to a future file asset. No filesystem access happens here.                                                                                                                                                   |
 
 ### `SparkResourceRef`
 
@@ -111,7 +111,7 @@ source })` is the single entry point that constructs a `Spark`:
   `createEntityScope`, never trusted as-is from the caller — this both
   proves the shape at runtime (defending against a caller that has
   bypassed TypeScript) and guarantees `spark.universeId ===
-  spark.scope.universeId` by construction.
+spark.scope.universeId` by construction.
 - `provenanceRecord` must be a full, valid `ProvenanceRecord` (Directive
   004), but only a `ProvenanceRef` derived from it is stored. Raw Spark
   acquisition only accepts `creator-original` and `imported-reference`

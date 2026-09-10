@@ -5,7 +5,12 @@ import {
   isSparkId,
   type SparkId,
 } from '../src/spark/ids/spark-id.js';
-import { generateUniverseId, generateWorkId, generateEntityId, DomainValidationError } from '@cios/domain';
+import {
+  generateUniverseId,
+  generateWorkId,
+  generateEntityId,
+  DomainValidationError,
+} from '@cios/domain';
 import { generateProvenanceId } from '@cios/provenance';
 
 describe('SparkId', () => {
@@ -114,5 +119,6 @@ describe('SparkId', () => {
       sparkId,
       universeId,
     ]);
+    expect([workId, entityId, provenanceId]).not.toContain(sparkId);
   });
 });

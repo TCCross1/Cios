@@ -43,8 +43,7 @@ interface WebCryptoUuidSource {
 
 function resolveWebCrypto(): WebCryptoUuidSource | undefined {
   const candidate = (globalThis as { readonly crypto?: unknown }).crypto as
-    | Partial<WebCryptoUuidSource>
-    | undefined;
+    Partial<WebCryptoUuidSource> | undefined;
   if (candidate !== undefined && typeof candidate.randomUUID === 'function') {
     return candidate as WebCryptoUuidSource;
   }

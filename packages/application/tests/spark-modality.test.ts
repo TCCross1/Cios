@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createSparkModality,
-  isSparkModality,
-} from '../src/spark/source/spark-modality.js';
+import { createSparkModality, isSparkModality } from '../src/spark/source/spark-modality.js';
 import { DomainValidationError } from '@cios/domain';
 
 describe('SparkModality', () => {
