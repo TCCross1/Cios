@@ -23,4 +23,14 @@ describe('Concept', () => {
   it('rejects a whitespace-only name', () => {
     expect(() => createConcept({ scope, name: '   ' })).toThrow(DomainValidationError);
   });
+
+  it('is frozen at runtime: direct mutation does not change the constructed value', () => {
+    const concept = createConcept({ scope, name: 'The Binding Oath' });
+    expect(Object.isFrozen(concept)).toBe(true);
+    expect(() => {
+      // @ts-expect-error Concept.name is readonly at compile time too
+      concept.name = 'Mutated';
+    }).toThrow(TypeError);
+    expect(concept.name).toBe('The Binding Oath');
+  });
 });

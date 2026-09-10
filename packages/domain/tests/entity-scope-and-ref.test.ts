@@ -66,33 +66,46 @@ describe('EntityRef', () => {
   it('accepts a valid EntityRef', () => {
     const universeId = generateUniverseId();
     const entityId = generateEntityId();
-    const ref = createEntityRef({ universeId, entityId, kind: 'character' });
-    expect(ref).toEqual({ universeId, entityId, kind: 'character' });
+    const ref = createEntityRef({ universeId, entityId, entityKind: 'character' });
+    expect(ref).toEqual({ universeId, entityId, entityKind: 'character' });
   });
 
   it('requires a valid universeId', () => {
     const entityId = generateEntityId();
     expect(() =>
-      createEntityRef({ universeId: 'bad' as UniverseId, entityId, kind: 'character' }),
+      createEntityRef({ universeId: 'bad' as UniverseId, entityId, entityKind: 'character' }),
     ).toThrow(DomainValidationError);
   });
 
   it('requires a valid entityId', () => {
     const universeId = generateUniverseId();
     expect(() =>
-      createEntityRef({ universeId, entityId: 'bad' as EntityId, kind: 'character' }),
+      createEntityRef({ universeId, entityId: 'bad' as EntityId, entityKind: 'character' }),
     ).toThrow(DomainValidationError);
   });
 
-  it('rejects an unrecognized kind', () => {
+  it('rejects a missing entityKind', () => {
     const universeId = generateUniverseId();
     const entityId = generateEntityId();
     expect(() =>
       createEntityRef({
         universeId,
         entityId,
-        // @ts-expect-error intentionally invalid kind for a runtime-rejection test
-        kind: 'not-a-real-kind',
+        // @ts-expect-error entityKind is required and must be a valid EntityKind
+        entityKind: undefined,
+      }),
+    ).toThrow(DomainValidationError);
+  });
+
+  it('rejects an unrecognized entityKind', () => {
+    const universeId = generateUniverseId();
+    const entityId = generateEntityId();
+    expect(() =>
+      createEntityRef({
+        universeId,
+        entityId,
+        // @ts-expect-error intentionally invalid entityKind for a runtime-rejection test
+        entityKind: 'not-a-real-kind',
       }),
     ).toThrow(DomainValidationError);
   });
@@ -100,8 +113,8 @@ describe('EntityRef', () => {
   it('accepts the required "object" EntityKind (not "creative-object")', () => {
     const universeId = generateUniverseId();
     const entityId = generateEntityId();
-    const ref = createEntityRef({ universeId, entityId, kind: 'object' });
-    expect(ref.kind).toBe('object');
+    const ref = createEntityRef({ universeId, entityId, entityKind: 'object' });
+    expect(ref.entityKind).toBe('object');
   });
 
   it('rejects the obsolete unauthorized "creative-object" EntityKind literal', () => {
@@ -112,30 +125,46 @@ describe('EntityRef', () => {
         universeId,
         entityId,
         // @ts-expect-error "creative-object" is not a valid EntityKind; the required literal is "object"
-        kind: 'creative-object',
+        entityKind: 'creative-object',
       }),
     ).toThrow(DomainValidationError);
   });
 
-  it('JSON-serializes to a stable plain-data shape', () => {
+  it('does not accept the obsolete "kind" field as part of the public contract', () => {
     const universeId = generateUniverseId();
     const entityId = generateEntityId();
-    const ref = createEntityRef({ universeId, entityId, kind: 'location' });
+    const ref = createEntityRef({ universeId, entityId, entityKind: 'character' });
+    expect((ref as unknown as { kind?: unknown }).kind).toBeUndefined();
+    expect(Object.keys(ref).sort()).toEqual(['entityId', 'entityKind', 'universeId']);
+  });
+
+  it('JSON-serializes to a stable plain-data shape using "entityKind"', () => {
+    const universeId = generateUniverseId();
+    const entityId = generateEntityId();
+    const ref = createEntityRef({ universeId, entityId, entityKind: 'location' });
 
     const roundTripped = JSON.parse(JSON.stringify(ref));
-    expect(roundTripped).toEqual({ universeId, entityId, kind: 'location' });
+    expect(roundTripped).toEqual({ universeId, entityId, entityKind: 'location' });
+  });
+
+  it('preserves cross-universe identity fields alongside entityKind', () => {
+    const universeId = generateUniverseId();
+    const entityId = generateEntityId();
+    const ref = createEntityRef({ universeId, entityId, entityKind: 'faction' });
+    expect(ref.universeId).toBe(universeId);
+    expect(ref.entityId).toBe(entityId);
   });
 
   it('is frozen at runtime: cannot be mutated after creation', () => {
     const universeId = generateUniverseId();
     const entityId = generateEntityId();
-    const ref = createEntityRef({ universeId, entityId, kind: 'character' });
+    const ref = createEntityRef({ universeId, entityId, entityKind: 'character' });
     expect(Object.isFrozen(ref)).toBe(true);
     expect(() => {
-      // @ts-expect-error EntityRef.kind is readonly at compile time too
-      ref.kind = 'location';
+      // @ts-expect-error EntityRef.entityKind is readonly at compile time too
+      ref.entityKind = 'location';
     }).toThrow(TypeError);
-    expect(ref.kind).toBe('character');
+    expect(ref.entityKind).toBe('character');
   });
 });
 

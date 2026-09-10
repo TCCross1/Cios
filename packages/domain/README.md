@@ -4,17 +4,19 @@ Pure domain rules for CIOS. Expresses core domain concepts and invariants with n
 
 ## Status
 
-Directive 003 (corrected by Directive 003R): implements the foundational
+Directive 003 (corrected by Directive 003R and Directive 003R2): implements the foundational
 Creative Domain Kernel — `CreativeUniverse`, `CreativeWork`,
 `CreativeFormat`, the `CreativeEntity` foundation (`EntityKind`,
-`EntityScope`, `EntityRef`, `CreativeEntityIdentity`/
+`EntityScope`, `EntityRef` (`entityKind` field), `CreativeEntityIdentity`/
 `CreativeEntityLifecycle`), the foundational entity subtypes
 (`Character`, `Location`, `CreativeObject`, `Faction`, `CreativeEvent`,
 `Concept`, `Theme`, `Rule`), `TemporalReference`, `LifecycleState`, and
 branded identifiers (`UniverseId`, `WorkId`, `EntityId`). Every
-construction function returns a runtime-frozen value, and identifier
+construction function returns a runtime-frozen value, identifier
 generation uses the portable Web Crypto API (`globalThis.crypto`), not
-`node:crypto`. See `docs/architecture/creative-domain-model.md` for the
+`node:crypto`, and `UtcTimestamp` validation requires true calendar
+validity (impossible dates such as `2026-02-30` are rejected, never
+normalized). See `docs/architecture/creative-domain-model.md` for the
 full model and terminology, and `docs/architecture/adr/0013-*.md` for the
 identifier/entity-subtype strategy.
 

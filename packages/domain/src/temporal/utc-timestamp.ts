@@ -21,15 +21,29 @@ export type UtcTimestamp = string & { readonly [utcTimestampBrand]: true };
 const UTC_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 function isSyntacticallyValidUtcTimestamp(value: string): boolean {
-  if (!UTC_TIMESTAMP_PATTERN.test(value)) {
-    return false;
-  }
-  return !Number.isNaN(Date.parse(value));
+  return UTC_TIMESTAMP_PATTERN.test(value);
+}
+
+// `Date` parsing silently normalizes calendar-impossible values (e.g.
+// "2026-02-30T12:00:00.000Z" rolls over to "2026-03-02T12:00:00.000Z")
+// instead of rejecting them. CIOS Deterministic Truth requires that an
+// accepted timestamp be the *exact* calendar instant it claims to be, so
+// a syntactically valid string is only accepted if parsing it and
+// re-serializing the result via `toISOString()` reproduces the original
+// string unchanged. Any calendar overflow (impossible month/day/hour/
+// minute/second) changes the round-tripped string and is rejected.
+function isSemanticallyValidUtcTimestamp(value: string): boolean {
+  const parsed = new Date(value);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString() === value;
+}
+
+function isValidUtcTimestamp(value: string): boolean {
+  return isSyntacticallyValidUtcTimestamp(value) && isSemanticallyValidUtcTimestamp(value);
 }
 
 /** Runtime type guard for `UtcTimestamp`. */
 export function isUtcTimestamp(value: unknown): value is UtcTimestamp {
-  return typeof value === 'string' && isSyntacticallyValidUtcTimestamp(value);
+  return typeof value === 'string' && isValidUtcTimestamp(value);
 }
 
 /**
@@ -38,10 +52,10 @@ export function isUtcTimestamp(value: unknown): value is UtcTimestamp {
  * real, strict ISO-8601 UTC instant.
  */
 export function createUtcTimestamp(raw: string): UtcTimestamp {
-  if (!isSyntacticallyValidUtcTimestamp(raw)) {
+  if (!isValidUtcTimestamp(raw)) {
     throw new DomainValidationError(
       'utc_timestamp.malformed',
-      `Timestamp must be a strict ISO-8601 UTC instant (e.g. "2026-01-01T00:00:00.000Z"), received: ${JSON.stringify(raw)}.`,
+      `Timestamp must be a strict, calendar-valid ISO-8601 UTC instant (e.g. "2026-01-01T00:00:00.000Z"), received: ${JSON.stringify(raw)}.`,
       'timestamp',
     );
   }

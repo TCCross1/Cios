@@ -368,14 +368,17 @@ See ADR 0013 for the full rationale.
 `packages/domain/src/entity/entity-ref.ts`
 
 ```
-EntityRef { universeId: UniverseId; entityId: EntityId; kind: EntityKind }
+EntityRef { universeId: UniverseId; entityId: EntityId; entityKind: EntityKind }
 ```
 
-`EntityRef.kind` is deliberately **not** renamed to `entityKind` — unlike
-the `CreativeEntity` foundation, `EntityRef` was already a correct,
-minimal, previously-approved shape, and Directive 003R's corrections are
-scoped to the defects identified during verification, not a blanket
-rename across every type that happens to share a discriminant concept.
+`EntityRef.kind` was renamed to `EntityRef.entityKind` by Directive 003R2:
+the original Directive 003 specification used `entityKind` for this
+field, and no later authoritative directive explicitly superseded that
+name. There is no backward-compatible `kind` alias — no production
+downstream consumer of `@cios/domain` existed at the time of this
+rename. `EntityScope.kind` and `TemporalReference.kind` (below) are
+unaffected by this rename: they are legitimate discriminated-union tags,
+not identity vocabulary, and remain named `kind`.
 
 `universeId` is included alongside `entityId` — not merely `entityId`
 alone — for the same isolation reasoning as `WorkEntityScope` (see
@@ -420,6 +423,25 @@ chronology engine, causal graph, era system, or fictional-calendar date
 arithmetic is implemented — only a minimal, validated shape per kind of
 temporal knowledge. Every variant returned by `createTemporalReference` is
 frozen.
+
+`UtcTimestamp` requires **true calendar validity, not merely
+parseability** (Directive 003R2). A candidate string must be both:
+
+1. syntactically valid against the strict fixed-width ISO-8601 UTC
+   pattern `YYYY-MM-DDTHH:mm:ss.sssZ`, and
+2. semantically valid as the exact calendar instant it expresses —
+   `new Date(input).toISOString() === input` must hold exactly.
+
+JavaScript `Date` parsing silently normalizes calendar-impossible values
+(e.g. `"2026-02-30T12:00:00.000Z"` becomes `"2026-03-02T12:00:00.000Z"`
+internally) rather than rejecting them, so relying on `Date.parse`
+returning a finite number alone is insufficient and was a prior defect.
+Impossible dates (nonexistent month/day/hour/minute/second, e.g. Feb 30,
+Feb 29 in a non-leap year, hour 24, minute 60, second 60) are always
+**rejected**, never silently renormalized to a nearby valid date. Both
+`createdAt` and `updatedAt` on every entity, `CreativeUniverse`, and
+`CreativeWork` are validated through this same shared check — no
+subtype bypasses it.
 
 ## Narrative Position Decision
 

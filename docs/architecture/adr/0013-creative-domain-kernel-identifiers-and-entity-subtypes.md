@@ -69,8 +69,11 @@ universeId } | { kind: 'work', universeId, workId }` — never a single
   time (proven in `packages/domain/tests/type-safety.test.ts` via
   `@ts-expect-error`, verified for real by
   `packages/domain/tsconfig.tests.json` — see below).
-- No new runtime dependency was added for identifiers (`node:crypto`) or
-  for discriminated unions (native TypeScript).
+- Identifier generation uses `globalThis.crypto.randomUUID()` (see
+  "Amendment (Directive 003R)" below); no new runtime dependency was
+  needed, and no source file depends on `node:crypto` or any other
+  Node-specific module for identifiers or discriminated unions (native
+  TypeScript).
 - A new `packages/domain/tsconfig.tests.json` was introduced
   (`include: ["src", "tests"]`) and `packages/domain/package.json`'s
   `typecheck` script now runs both `tsconfig.json` and
@@ -113,10 +116,9 @@ identified defects that this ADR's decisions did not anticipate:
   called "id") and made call sites less self-documenting. They are
   corrected to `entityId`, `entityKind`, and `lifecycleState`
   respectively — decision 2 above and this ADR's other references reflect
-  the corrected names. `EntityRef.kind` is deliberately left unchanged
-  (it was already an unambiguous, previously-approved shape; see
-  `docs/architecture/creative-domain-model.md`, "Entity Reference
-  Strategy").
+  the corrected names. (`EntityRef.kind` was initially left unchanged by
+  this amendment; see "Amendment (Directive 003R2)" below, which corrects
+  it to `EntityRef.entityKind`.)
 - **`EntityKind` literal correction.** `'creative-object'` is corrected to
   `'object'`, matching the plain, one-word naming convention already used
   by every other kind (`character`, `location`, `faction`, ...); only the
@@ -135,6 +137,42 @@ identified defects that this ADR's decisions did not anticipate:
 None of these amendments change the core decisions in this ADR (branded
 identifiers, fixed-literal-generic entity subtypes, discriminated
 unions) — they correct implementation defects within that design.
+
+## Amendment (Directive 003R2)
+
+Further independent verification (Directive 003RT) identified two
+remaining defects this ADR's Directive 003R amendment did not fully
+close:
+
+- **`EntityRef` canonical field name.** The Directive 003R amendment
+  above deliberately left `EntityRef.kind` unchanged. Directive 003R2
+  reverses that decision: the original Directive 003 specification used
+  `entityKind` for this field, and no later authoritative directive
+  explicitly superseded that name. `EntityRef.kind` is therefore renamed
+  to `EntityRef.entityKind`, with no backward-compatible `kind` alias (no
+  production downstream consumer of `@cios/domain` existed at the time of
+  this change). `EntityScope.kind` and `TemporalReference.kind` are
+  unaffected — they are legitimate discriminated-union tags, not identity
+  vocabulary, and remain named `kind`.
+- **UTC timestamp calendar validity.** `UtcTimestamp` validation
+  previously accepted any string that was both regex-shaped and
+  parseable by `Date.parse`. Because JavaScript `Date` parsing silently
+  normalizes calendar-impossible values (e.g. `"2026-02-30T12:00:00.000Z"`
+  rolls over to `"2026-03-02T12:00:00.000Z"` internally) rather than
+  rejecting them, mechanically-impossible timestamps could be persisted
+  as authoritative domain state unchanged. `createUtcTimestamp`/
+  `isUtcTimestamp` now additionally require that parsing the input via
+  `new Date(input)` and re-serializing it via `.toISOString()` reproduce
+  the exact original string; any calendar overflow changes the
+  round-tripped string and is now rejected. `createdAt`/`updatedAt`
+  continue to be validated through the same shared timestamp-pair
+  resolver used by `CreativeUniverse`, `CreativeWork`, and every entity
+  subtype, so this stronger check applies uniformly across the domain
+  kernel with no bypass.
+
+Neither amendment changes `CreativeFormat`, `EntityKind`, or
+`LifecycleState` values, nor any other `CreativeEntity` foundation field
+name.
 
 ## Alternatives Considered
 

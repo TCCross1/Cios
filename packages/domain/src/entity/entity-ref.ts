@@ -16,7 +16,7 @@ import { isEntityKind, type EntityKind } from './entity-kind.js';
 export interface EntityRef {
   readonly universeId: UniverseId;
   readonly entityId: EntityId;
-  readonly kind: EntityKind;
+  readonly entityKind: EntityKind;
 }
 
 /**
@@ -27,7 +27,7 @@ export interface EntityRef {
 export function createEntityRef(input: {
   readonly universeId: UniverseId;
   readonly entityId: EntityId;
-  readonly kind: EntityKind;
+  readonly entityKind: EntityKind;
 }): EntityRef {
   if (!isUniverseId(input.universeId)) {
     throw new DomainValidationError(
@@ -43,17 +43,17 @@ export function createEntityRef(input: {
       'entityId',
     );
   }
-  if (!isEntityKind(input.kind)) {
+  if (!isEntityKind(input.entityKind)) {
     throw new DomainValidationError(
-      'entity_ref.kind_invalid',
-      `EntityRef.kind must be a supported EntityKind, received: ${JSON.stringify(input.kind)}.`,
-      'kind',
+      'entity_ref.entity_kind_invalid',
+      `EntityRef.entityKind must be a supported EntityKind, received: ${JSON.stringify(input.entityKind)}.`,
+      'entityKind',
     );
   }
 
   return Object.freeze({
     universeId: input.universeId,
     entityId: input.entityId,
-    kind: input.kind,
+    entityKind: input.entityKind,
   });
 }

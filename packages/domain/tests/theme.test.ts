@@ -23,4 +23,14 @@ describe('Theme', () => {
   it('rejects a whitespace-only name', () => {
     expect(() => createTheme({ scope, name: '\t\n' })).toThrow(DomainValidationError);
   });
+
+  it('is frozen at runtime: direct mutation does not change the constructed value', () => {
+    const theme = createTheme({ scope, name: 'Found Family' });
+    expect(Object.isFrozen(theme)).toBe(true);
+    expect(() => {
+      // @ts-expect-error Theme.name is readonly at compile time too
+      theme.name = 'Mutated';
+    }).toThrow(TypeError);
+    expect(theme.name).toBe('Found Family');
+  });
 });

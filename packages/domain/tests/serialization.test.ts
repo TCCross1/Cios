@@ -46,9 +46,17 @@ describe('JSON serialization round-trips', () => {
     const universeId = generateUniverseId();
     const scope = createEntityScope({ kind: 'universe', universeId });
     const character = createCharacter({ scope, name: 'Ada Northwind' });
-    const ref = createEntityRef({ universeId, entityId: character.entityId, kind: 'character' });
+    const ref = createEntityRef({
+      universeId,
+      entityId: character.entityId,
+      entityKind: 'character',
+    });
     const parsed = JSON.parse(JSON.stringify(ref));
-    expect(parsed).toEqual({ universeId, entityId: character.entityId, kind: 'character' });
+    expect(parsed).toEqual({
+      universeId,
+      entityId: character.entityId,
+      entityKind: 'character',
+    });
   });
 
   it('Character JSON.stringifies and parses back to a plain-data shape', () => {

@@ -71,11 +71,13 @@ describe('compile-time branded identifier safety (verified by `tsc`, exercised a
     }
   });
 
-  it('entity subtype discriminants narrow correctly on EntityRef.kind', () => {
+  it('entity subtype discriminants narrow correctly on EntityRef.entityKind', () => {
     const universeId = generateUniverseId();
     const entityId = generateEntityId();
-    const ref = createEntityRef({ universeId, entityId, kind: 'character' });
-    expect(ref.kind).toBe('character');
+    const ref = createEntityRef({ universeId, entityId, entityKind: 'character' });
+    expect(ref.entityKind).toBe('character');
+    // @ts-expect-error obsolete `kind` is not part of the EntityRef public contract; use `entityKind`
+    expect(ref.kind).toBeUndefined();
   });
 });
 

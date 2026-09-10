@@ -47,4 +47,14 @@ describe('Rule', () => {
     expect(rule).not.toHaveProperty('authority');
     expect(rule.lifecycleState).toBe('draft');
   });
+
+  it('is frozen at runtime: direct mutation does not change the constructed value', () => {
+    const rule = createRule({ scope, name: 'Magic cannot resurrect the dead' });
+    expect(Object.isFrozen(rule)).toBe(true);
+    expect(() => {
+      // @ts-expect-error Rule.name is readonly at compile time too
+      rule.name = 'Mutated';
+    }).toThrow(TypeError);
+    expect(rule.name).toBe('Magic cannot resurrect the dead');
+  });
 });

@@ -97,6 +97,22 @@ describe('CreativeUniverse', () => {
     );
   });
 
+  it('rejects a calendar-impossible createdAt through the full construction path (Directive 003R2)', () => {
+    expect(() =>
+      createCreativeUniverse({ name: 'Valid Name', createdAt: '2026-02-30T12:00:00.000Z' }),
+    ).toThrow(DomainValidationError);
+  });
+
+  it('rejects a calendar-impossible updatedAt through the full construction path (Directive 003R2)', () => {
+    expect(() =>
+      createCreativeUniverse({
+        name: 'Valid Name',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-02-30T12:00:00.000Z',
+      }),
+    ).toThrow(DomainValidationError);
+  });
+
   it('accepts a pre-branded createdAt timestamp (it is still re-validated, not bypassed)', () => {
     const createdAt = '2025-06-01T12:00:00.000Z' as UtcTimestamp;
     const universe = createCreativeUniverse({ name: 'Valid Name', createdAt });
