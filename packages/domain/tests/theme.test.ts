@@ -12,7 +12,8 @@ describe('Theme', () => {
   it('constructs a valid theme', () => {
     const theme = createTheme({ scope, name: 'Found Family' });
     expect(theme.name).toBe('Found Family');
-    expect(theme.kind).toBe('theme');
+    expect(theme.entityKind).toBe('theme');
+    expect(theme.displayName).toBe('Found Family');
   });
 
   it('rejects an empty name', () => {

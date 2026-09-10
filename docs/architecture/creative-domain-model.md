@@ -1,6 +1,6 @@
-# Creative Domain Model (Directive 003)
+# Creative Domain Model (Directive 003, corrected by Directive 003R)
 
-Status: Implemented (foundational only). Package: `@cios/domain`
+Status: Implemented (foundational only), remediated. Package: `@cios/domain`
 (`packages/domain/src`).
 
 This document describes the foundational Creative Domain Kernel — the
@@ -8,17 +8,28 @@ deterministic, framework/persistence/AI-independent vocabulary that later
 CIOS systems (Canon Ledger, Spark Engine, Creation Graph, Story Genome,
 ...) will build on. It does **not** describe any of those later systems.
 
+Directive 003R corrected several defects found during independent
+verification of the original Directive 003 implementation: the
+`CreativeFormat` vocabulary, the `object` `EntityKind` literal, missing
+`updatedAt`/`lifecycleState` on `CreativeUniverse`/`CreativeWork`,
+non-canonical entity foundation field names, missing `displayName`/
+timestamps on entity subtypes, no runtime immutability, and a
+Node-only `node:crypto` import. This document reflects the corrected,
+current model — it does not describe the original, defective shapes.
+
 ## Core Modeling Principle
 
 Every domain concept in this kernel is understood along separated
 concerns, so no single directive collapses them into one ambiguous shape:
 
 - **IDENTITY** — what something is and where it is addressable
-  (`CreativeEntityIdentity`: `id`, `kind`, `scope`).
+  (`CreativeEntityIdentity`: `entityId`, `universeId`, `entityKind`,
+  `scope`, `displayName`).
 - **CONTENT** — the concept's descriptive substance (`name`,
   `description`, subtype-specific fields like `Character.aliases`).
-- **STATE** — its ordinary lifecycle (`CreativeEntityLifecycle`:
-  `lifecycle`), explicitly distinct from future Canon authority.
+- **STATE** — its ordinary lifecycle and audit timestamps
+  (`CreativeEntityLifecycle`: `lifecycleState`, `createdAt`,
+  `updatedAt`), explicitly distinct from future Canon authority.
 - **SCOPE** — its addressability boundary (`EntityScope`: universe-wide
   or work-scoped).
 - **REFERENCE** — how one concept points at another without embedding it
@@ -31,50 +42,71 @@ concerns, so no single directive collapses them into one ambiguous shape:
 
 ## Terminology
 
-| Term               | Meaning                                                                                               |
-| ------------------ | ----------------------------------------------------------------------------------------------------- |
-| Creative Universe  | The top-level creative container; everything else belongs to exactly one.                             |
-| Creative Work      | A specific work (novel, film, season, ...) belonging to exactly one universe.                         |
-| Creative Format    | The closed set of supported work formats.                                                             |
-| Creative Entity    | The foundational identity+lifecycle shape every entity subtype composes with.                         |
-| Entity Kind        | The closed, discriminant tag identifying which entity subtype a value is.                             |
-| Entity Scope       | Whether an entity belongs to an entire universe or one specific work within it.                       |
-| Entity Ref         | A lightweight, serializable pointer to an entity (universe + entity id + kind), not an embedded copy. |
-| Lifecycle          | An entity's ordinary draft/active/archived state — never Canon authority.                             |
-| Temporal Reference | When an event occurs in-universe: exact/textual/relative/unknown.                                     |
-| Narrative Position | (Deferred — see below.) When the audience encounters something, as opposed to when it occurs.         |
+| Term               | Meaning                                                                                                    |
+| ------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Creative Universe  | The top-level creative container; everything else belongs to exactly one.                                  |
+| Creative Work      | A specific work (novel, film, season, ...) belonging to exactly one universe.                              |
+| Creative Format    | The closed set of supported work formats.                                                                  |
+| Creative Entity    | The foundational identity+lifecycle shape every entity subtype composes with.                              |
+| Entity Kind        | The closed, discriminant tag identifying which entity subtype a value is.                                  |
+| Entity Scope       | Whether an entity belongs to an entire universe or one specific work within it.                            |
+| Entity Ref         | A lightweight, serializable pointer to an entity (universe + entity id + kind), not an embedded copy.      |
+| Lifecycle State    | An entity's/universe's/work's ordinary draft/active/archived state — never Canon authority.                |
+| Display Name       | An entity's canonical, generic display string — always identical to its subtype-specific name/title field. |
+| Temporal Reference | When an event occurs in-universe: exact/textual/relative/unknown.                                          |
+| Narrative Position | (Deferred — see below.) When the audience encounters something, as opposed to when it occurs.              |
 
 ## Creative Universe
 
 `packages/domain/src/universe/creative-universe.ts`
 
 ```
-CreativeUniverse { id: UniverseId; name: string; description?: string; createdAt: UtcTimestamp }
+CreativeUniverse {
+  id: UniverseId; name: string; description?: string;
+  createdAt: UtcTimestamp; updatedAt: UtcTimestamp; lifecycleState: LifecycleState;
+}
 ```
 
 Invariants: `name` must be non-empty after trimming; `id` is generated if
 omitted, otherwise validated; `createdAt` is generated (`nowAsUtcTimestamp()`)
-if omitted, otherwise validated (a pre-branded `UtcTimestamp` is accepted
-without re-validation; a plain string is parsed and validated).
+if omitted, otherwise validated (a pre-branded `UtcTimestamp` is still
+re-validated, not bypassed; a plain string is parsed and validated).
+`updatedAt` defaults to `createdAt` when omitted, and is rejected if it
+would precede `createdAt`. `lifecycleState` defaults to `'draft'`. The
+returned value is frozen (`Object.freeze`) — see "Immutability /
+Serialization" below.
 
 ## Creative Work
 
 `packages/domain/src/work/creative-work.ts`
 
 ```
-CreativeWork { id: WorkId; universeId: UniverseId; title: string; format: CreativeFormat; description?: string; createdAt: UtcTimestamp }
+CreativeWork {
+  id: WorkId; universeId: UniverseId; title: string; format: CreativeFormat;
+  description?: string; createdAt: UtcTimestamp; updatedAt: UtcTimestamp;
+  lifecycleState: LifecycleState;
+}
 ```
 
 `universeId` is a required field (compile-time enforced; also validated
 at runtime). `title` must be non-empty after trimming. `format` must be a
-supported `CreativeFormat`.
+supported `CreativeFormat`. `updatedAt`/`lifecycleState` follow the same
+defaulting/ordering/validation rules as `CreativeUniverse`. The returned
+value is frozen.
 
 ## Creative Format
 
 `packages/domain/src/format/creative-format.ts`
 
-A closed union: `'novel' | 'feature-film' | 'television' | 'sitcom' |
-'animation' | 'narrative-game' | 'rpg' | 'graphic-narrative'`.
+A closed union of exactly 11 values: `'novel' | 'feature-film' |
+'television-series' | 'sitcom' | 'animation' | 'narrative-game' |
+'role-playing-game' | 'graphic-narrative' | 'audio' | 'interactive' |
+'other'`.
+
+The obsolete literals `'television'` and `'rpg'` (used by the original,
+defective Directive 003 implementation) are **not** valid `CreativeFormat`
+values and are rejected by `isCreativeFormat`/`assertCreativeFormat`; no
+alias/compatibility mapping exists for them.
 
 **Extension strategy**: adding a new format is a deliberate, reviewed
 change to this literal union (and `isCreativeFormat`/
@@ -87,21 +119,51 @@ is forced by `tsc` to handle new formats explicitly.
 `packages/domain/src/entity/{entity-kind,entity-scope,entity-ref,entity-identity}.ts`
 
 - `EntityKind`: closed union of the 8 implemented kinds (see below).
-- `CreativeEntityIdentity<TKind extends EntityKind>`: `{ id: EntityId; kind: TKind; scope: EntityScope }`.
-- `CreativeEntityLifecycle`: `{ lifecycle: LifecycleState }`.
+- `CreativeEntityIdentity<TKind extends EntityKind>`: `{ entityId: EntityId;
+universeId: UniverseId; entityKind: TKind; scope: EntityScope;
+displayName: string }`.
+- `CreativeEntityLifecycle`: `{ lifecycleState: LifecycleState; createdAt:
+UtcTimestamp; updatedAt: UtcTimestamp }`.
+
+These are the corrected, canonical field names. The obsolete names `id`,
+`kind`, and `lifecycle` used by the original implementation are not part
+of the public `CreativeEntity` contract (verified by compile-time
+assertions in `packages/domain/tests/type-safety.test.ts`).
+
+`universeId` is exposed as a top-level field in addition to
+`scope.universeId`: the caller supplies only `scope`, and `universeId` is
+deterministically _derived_ from `scope.universeId` — there is no
+separate, independently suppliable `universeId` input, so the two can
+never contradict each other. `displayName` is likewise always derived
+from the same normalized value a subtype uses for its own semantic field
+(`Character.name`, `CreativeEvent.title`, ...) — never an independently
+suppliable value.
 
 Each concrete entity subtype (`Character`, `Location`, ...) is declared as
 `interface X extends CreativeEntityIdentity<'x'>, CreativeEntityLifecycle { ...content }`.
 Every subtype's `createX` function hardcodes its own kind literal
 internally (via the shared, module-internal `resolveEntityIdentity`
-helper) and does not accept a caller-supplied `kind` — an entity can
-never misidentify its own subtype, at compile time (no `kind` field to
-override) or at runtime (nothing reads a caller-supplied kind).
+helper) and does not accept a caller-supplied `entityKind` — an entity can
+never misidentify its own subtype, at compile time (no `entityKind` field
+to override) or at runtime (nothing reads a caller-supplied kind).
+
+`resolveEntityIdentity` also freezes its returned identity object and a
+defensive copy of the caller-supplied `scope` (so a caller retaining a
+reference to the original `scope` object cannot mutate an already-
+constructed entity's scope afterward).
 
 ## Entity Kind Decisions
 
 **Included** (foundational, directive-required): `character`, `location`,
-`creative-object`, `faction`, `event`, `concept`, `theme`, `rule`.
+`object`, `faction`, `event`, `concept`, `theme`, `rule`.
+
+The literal is `'object'`, not `'creative-object'` — the obsolete
+`'creative-object'` literal used by the original implementation is
+rejected by `isEntityKind`. The TypeScript _type/interface name_
+`CreativeObject` is unchanged (only the `EntityKind` string literal
+value changed) — the type name avoids colliding with JavaScript's
+built-in `Object`, while the literal value follows the same plain,
+one-word naming convention as every other kind.
 
 **Deliberately deferred** (not implemented; no fake/placeholder
 implementation exists): `organization` (see Faction/Organization
@@ -118,11 +180,15 @@ Character extends CreativeEntityIdentity<'character'>, CreativeEntityLifecycle {
 }
 ```
 
-Aliases: each is trimmed; an empty-after-trim alias is rejected (fails
-closed rather than silently dropping); exact-duplicate aliases are
-removed, preserving first-occurrence order; case is **never folded**
-(aliases are case-sensitive proper nouns — e.g. "Doc" and "DOC" may be
-meaningfully different in-universe).
+`name` is always identical to `displayName`. Aliases: each is trimmed; an
+empty-after-trim alias is rejected (fails closed rather than silently
+dropping); exact-duplicate aliases are removed, preserving
+first-occurrence order; case is **never folded** (aliases are
+case-sensitive proper nouns — e.g. "Doc" and "DOC" may be meaningfully
+different in-universe). The returned `aliases` array is always a fresh,
+frozen copy — the caller's original array (if any) is never retained by
+reference, so mutating it after construction never affects the
+constructed `Character`.
 
 Deliberately not implemented: Character Consciousness, psychology/goals/
 secrets models, relationship graphs, AI-generated personality, character
@@ -138,24 +204,27 @@ Location extends CreativeEntityIdentity<'location'>, CreativeEntityLifecycle {
 }
 ```
 
-A location is valid with no parent. Only the local invariant "a Location
-may not directly parent itself" is enforced (`parentLocationId === id`);
-full hierarchy-cycle detection requires graph/repository context beyond
-a single value and is out of scope for this directive.
+`name` is always identical to `displayName`. A location is valid with no
+parent. Only the local invariant "a Location may not directly parent
+itself" is enforced (`parentLocationId === entityId`); full
+hierarchy-cycle detection requires graph/repository context beyond a
+single value and is out of scope for this directive.
 
 ## Creative Object
 
 `packages/domain/src/creative-object/creative-object.ts`
 
 ```
-CreativeObject extends CreativeEntityIdentity<'creative-object'>, CreativeEntityLifecycle {
+CreativeObject extends CreativeEntityIdentity<'object'>, CreativeEntityLifecycle {
   name: string; description?: string;
 }
 ```
 
-Named `CreativeObject`, not `Object`, to avoid colliding with
-JavaScript's built-in `Object`. Deliberately not implemented: ownership
-history, inventory, physical simulation, artifact provenance.
+`entityKind` is the required literal `'object'` (not `'creative-object'`).
+`name` is always identical to `displayName`. The TypeScript type is named
+`CreativeObject`, not `Object`, to avoid colliding with JavaScript's
+built-in `Object`. Deliberately not implemented: ownership history,
+inventory, physical simulation, artifact provenance.
 
 ## Faction / Organization Decision
 
@@ -175,6 +244,7 @@ fields that would not make sense on a war-band or cult), that directive
 can introduce `Organization` as its own first-class kind — this decision
 does not preclude that. No fake/placeholder `Organization` type,
 constructor, or `EntityKind` value exists anywhere in this package.
+`name` is always identical to `displayName`.
 
 ## Creative Event
 
@@ -186,11 +256,12 @@ CreativeEvent extends CreativeEntityIdentity<'event'>, CreativeEntityLifecycle {
 }
 ```
 
-An event is valid with no temporal information at all (`temporalReference`
-is optional), and separately may hold the `unknown` variant of
-`TemporalReference` when timing is deliberately marked unresolved.
-Deliberately not implemented: chronology engine, causal/event-dependency
-graph, Mystery Ledger truth, character/audience knowledge of the event.
+`title` is always identical to `displayName`. An event is valid with no
+temporal information at all (`temporalReference` is optional), and
+separately may hold the `unknown` variant of `TemporalReference` when
+timing is deliberately marked unresolved. Deliberately not implemented:
+chronology engine, causal/event-dependency graph, Mystery Ledger truth,
+character/audience knowledge of the event.
 
 ## Concept
 
@@ -202,10 +273,10 @@ Concept extends CreativeEntityIdentity<'concept'>, CreativeEntityLifecycle {
 }
 ```
 
-For abstract creative ideas that are not themes, rules, objects, or any
-other more specific kind. Deliberately kept minimal so it is not misused
-as a catch-all for concepts that should instead get their own kind in a
-future directive.
+`name` is always identical to `displayName`. For abstract creative ideas
+that are not themes, rules, objects, or any other more specific kind.
+Deliberately kept minimal so it is not misused as a catch-all for
+concepts that should instead get their own kind in a future directive.
 
 ## Theme
 
@@ -217,6 +288,8 @@ Theme extends CreativeEntityIdentity<'theme'>, CreativeEntityLifecycle {
 }
 ```
 
+`name` is always identical to `displayName`.
+
 ## Rule
 
 `packages/domain/src/rule/rule.ts`
@@ -226,6 +299,8 @@ Rule extends CreativeEntityIdentity<'rule'>, CreativeEntityLifecycle {
   name: string; description?: string;
 }
 ```
+
+`name` is always identical to `displayName`.
 
 **Rule carries no Canon-authority field or state.** A `Rule`'s shape is
 identical in structure to `Concept`/`Theme` (identity + lifecycle + name
@@ -245,14 +320,19 @@ identical in structure to `Concept`/`Theme` (identity + lifecycle + name
 LifecycleState = 'draft' | 'active' | 'archived'
 ```
 
-This is an entity's **ordinary** working state — not Canon. No lifecycle
+This is an **ordinary maturity/editing state** — not Canon authority, and
+not a proxy for it. `draft` specifically means "still being actively
+imagined/edited/reconsidered by its creator" — a mundane, expected point
+in ordinary creative work, never a synonym for "unapproved Canon" or any
+future Canon-adjacent vocabulary. It applies uniformly to
+`CreativeUniverse`, `CreativeWork`, and every entity subtype. No lifecycle
 value in this closed union is, or resembles, a Canon-authority state
 (e.g. there is no `'locked_canon'`, `'canon'`, `'candidate'`, or similar
-value). `resolveLifecycleState(undefined)` defaults to `'draft'`;
-resolving any other string throws `DomainValidationError`. The future
-Canon Ledger (ADR 0007) will define its own, entirely separate versioned/
-provenance-tracked state machine — it is not layered on top of, or
-derived from, `LifecycleState`.
+value — verified directly in `packages/domain/tests/lifecycle.test.ts`).
+`resolveLifecycleState(undefined)` defaults to `'draft'`; resolving any
+other string throws `DomainValidationError`. The future Canon Ledger (ADR 0007) will define its own, entirely separate versioned/provenance-tracked
+state machine — it is not layered on top of, or derived from,
+`LifecycleState`.
 
 ## Identifier Strategy
 
@@ -266,8 +346,16 @@ where a `UniverseId` is required without an explicit, intentional cast.
 See ADR 0013 for the full rationale.
 
 - **Runtime format**: UUID v4 (validated via a shared internal regex).
-- **Generation**: `generateXId()` uses Node's built-in `node:crypto`
-  `randomUUID()` — no new dependency.
+- **Generation**: `generateXId()` uses the portable Web Crypto API
+  (`globalThis.crypto.randomUUID()`, accessed through a minimal
+  structural type in `ids/id-format.ts`) — **not** Node's `node:crypto`.
+  No source file under `packages/domain/src` imports `node:crypto` (or
+  any other `node:`-prefixed module), so ID generation works unmodified
+  in any modern JavaScript runtime that implements Web Crypto (browsers,
+  Node.js ≥ 19, Deno, Cloudflare Workers, ...), not only Node.js. If
+  `globalThis.crypto.randomUUID` is unavailable, generation throws
+  `DomainValidationError` rather than silently falling back to a
+  non-cryptographically-secure generator (e.g. `Math.random()`).
 - **Serialization**: a branded ID is a plain string at runtime, so
   `JSON.stringify`/`JSON.parse` round-trips it exactly as a string (the
   brand exists only in the type system and disappears after
@@ -283,13 +371,20 @@ See ADR 0013 for the full rationale.
 EntityRef { universeId: UniverseId; entityId: EntityId; kind: EntityKind }
 ```
 
+`EntityRef.kind` is deliberately **not** renamed to `entityKind` — unlike
+the `CreativeEntity` foundation, `EntityRef` was already a correct,
+minimal, previously-approved shape, and Directive 003R's corrections are
+scoped to the defects identified during verification, not a blanket
+rename across every type that happens to share a discriminant concept.
+
 `universeId` is included alongside `entityId` — not merely `entityId`
 alone — for the same isolation reasoning as `WorkEntityScope` (see
 below): a reference's universe is always known without a lookup/join,
 and a reference can never accidentally resolve into the wrong universe's
 entity if two universes ever reuse comparable identifiers in some future
 storage layer. `EntityRef` is a lightweight pointer only — it never
-embeds the referenced entity's content.
+embeds the referenced entity's content. `createEntityRef` returns a
+frozen value.
 
 ## Entity Scope Model
 
@@ -304,7 +399,7 @@ EntityScope =
 A discriminated union — never a single object with an optional `workId`
 — so "work scope without a work" is unrepresentable. `WorkEntityScope`
 includes `universeId` alongside `workId` for the same isolation reasoning
-as `EntityRef` above.
+as `EntityRef` above. `createEntityScope` returns a frozen value.
 
 ## Temporal Model
 
@@ -323,7 +418,8 @@ has a real-world-mappable date, so this is a closed, minimal
 discriminated union rather than a single `Date`/timestamp field. No
 chronology engine, causal graph, era system, or fictional-calendar date
 arithmetic is implemented — only a minimal, validated shape per kind of
-temporal knowledge.
+temporal knowledge. Every variant returned by `createTemporalReference` is
+frozen.
 
 ## Narrative Position Decision
 
@@ -348,15 +444,29 @@ message: string }`. Every `createX`/`resolveX` function either returns a
 fully valid value or throws `DomainValidationError` — it never returns a
 partially valid value, never silently coerces or drops invalid input,
 and never returns `null`/`undefined` in place of a validation failure.
+This includes the `createdAt`/`updatedAt` ordering invariant (an
+`updatedAt` earlier than `createdAt` is rejected, not silently
+reordered/clamped) and every `lifecycleState` value.
 
 ## Immutability / Serialization
 
 Every domain type is declared with `readonly` fields (and `readonly
-string[]` for array fields, e.g. `Character.aliases`) — domain values are
-not mutated in place; a new value must be constructed to represent a
-change. Every domain type is plain, JSON-safe data (no class instances,
-no functions, no `Map`/`Set`, no circular references) — `JSON.stringify`
-followed by `JSON.parse` always recovers an equivalent plain object (see
+string[]` for array fields, e.g. `Character.aliases`) at compile time —
+but Directive 003R additionally enforces this **at runtime**: every value
+returned by a `createX` construction function (`CreativeUniverse`,
+`CreativeWork`, every entity subtype, `EntityScope`, `EntityRef`, every
+`TemporalReference` variant) is passed through `Object.freeze` before
+being returned, and `Character.aliases` is frozen as its own array
+independent of the outer freeze. Because every module in this package is
+an ES module (implicit strict mode), assigning to a frozen property
+throws a `TypeError` rather than silently failing — verified directly in
+`packages/domain/tests/*.test.ts`'s runtime immutability tests, not only
+asserted via TypeScript's `readonly`.
+
+Every domain type is plain, JSON-safe data (no class instances, no
+functions, no `Map`/`Set`, no circular references) — `JSON.stringify`
+followed by `JSON.parse` always recovers an equivalent plain object, and
+`Object.freeze` does not interfere with `JSON.stringify` (see
 `packages/domain/tests/serialization.test.ts`).
 
 ## Intentionally Deferred Systems
@@ -376,6 +486,11 @@ silently promoted into, Canon authority (see "Lifecycle Model" and
 
 `packages/domain/src/index.ts` is the package's curated public export
 surface. Internal module-local helpers (e.g. `entity/entity-identity.ts`'s
-`resolveEntityIdentity`, `ids/id-format.ts`'s UUID validator) are
+`resolveEntityIdentity`, `entity/internal/display-text.ts`'s
+`resolveDisplayText`, `ids/id-format.ts`'s UUID validator/generator,
+`temporal/resolve-timestamp-pair.ts`'s `resolveTimestampPair`) are
 deliberately not re-exported, so consumers depend on stable, deliberate
-surface area rather than deep imports into implementation modules.
+surface area rather than deep imports into implementation modules. None
+of the obsolete field names (`id`, `kind`, `lifecycle` on the entity
+foundation) or obsolete literal values (`'television'`, `'rpg'`,
+`'creative-object'`) are exposed anywhere in this surface.

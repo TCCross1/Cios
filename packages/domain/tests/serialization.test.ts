@@ -22,6 +22,8 @@ describe('JSON serialization round-trips', () => {
       name: universe.name,
       description: universe.description,
       createdAt: universe.createdAt,
+      updatedAt: universe.updatedAt,
+      lifecycleState: universe.lifecycleState,
     });
   });
 
@@ -35,6 +37,8 @@ describe('JSON serialization round-trips', () => {
       title: work.title,
       format: work.format,
       createdAt: work.createdAt,
+      updatedAt: work.updatedAt,
+      lifecycleState: work.lifecycleState,
     });
   });
 
@@ -42,9 +46,9 @@ describe('JSON serialization round-trips', () => {
     const universeId = generateUniverseId();
     const scope = createEntityScope({ kind: 'universe', universeId });
     const character = createCharacter({ scope, name: 'Ada Northwind' });
-    const ref = createEntityRef({ universeId, entityId: character.id, kind: 'character' });
+    const ref = createEntityRef({ universeId, entityId: character.entityId, kind: 'character' });
     const parsed = JSON.parse(JSON.stringify(ref));
-    expect(parsed).toEqual({ universeId, entityId: character.id, kind: 'character' });
+    expect(parsed).toEqual({ universeId, entityId: character.entityId, kind: 'character' });
   });
 
   it('Character JSON.stringifies and parses back to a plain-data shape', () => {
@@ -53,10 +57,14 @@ describe('JSON serialization round-trips', () => {
     const character = createCharacter({ scope, name: 'Ada Northwind', aliases: ['Doc'] });
     const parsed = JSON.parse(JSON.stringify(character));
     expect(parsed).toEqual({
-      id: character.id,
-      kind: 'character',
+      entityId: character.entityId,
+      universeId: character.universeId,
+      entityKind: 'character',
       scope: { kind: 'universe', universeId },
-      lifecycle: 'draft',
+      displayName: 'Ada Northwind',
+      lifecycleState: 'draft',
+      createdAt: character.createdAt,
+      updatedAt: character.updatedAt,
       name: 'Ada Northwind',
       aliases: ['Doc'],
     });
@@ -68,10 +76,14 @@ describe('JSON serialization round-trips', () => {
     const location = createLocation({ scope, name: 'The Archive', description: 'A quiet place.' });
     const parsed = JSON.parse(JSON.stringify(location));
     expect(parsed).toEqual({
-      id: location.id,
-      kind: 'location',
+      entityId: location.entityId,
+      universeId: location.universeId,
+      entityKind: 'location',
       scope: { kind: 'universe', universeId },
-      lifecycle: 'draft',
+      displayName: 'The Archive',
+      lifecycleState: 'draft',
+      createdAt: location.createdAt,
+      updatedAt: location.updatedAt,
       name: 'The Archive',
       description: 'A quiet place.',
     });
@@ -87,12 +99,22 @@ describe('JSON serialization round-trips', () => {
     });
     const parsed = JSON.parse(JSON.stringify(event));
     expect(parsed).toEqual({
-      id: event.id,
-      kind: 'event',
+      entityId: event.entityId,
+      universeId: event.universeId,
+      entityKind: 'event',
       scope: { kind: 'universe', universeId },
-      lifecycle: 'draft',
+      displayName: 'The Founding',
+      lifecycleState: 'draft',
+      createdAt: event.createdAt,
+      updatedAt: event.updatedAt,
       title: 'The Founding',
       temporalReference: { kind: 'textual', value: 'the first age' },
     });
+  });
+
+  it('Object.freeze does not interfere with JSON serialization', () => {
+    const universe = createCreativeUniverse({ name: 'The Emberlands' });
+    expect(Object.isFrozen(universe)).toBe(true);
+    expect(() => JSON.stringify(universe)).not.toThrow();
   });
 });

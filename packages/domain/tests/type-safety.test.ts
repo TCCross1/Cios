@@ -6,6 +6,7 @@ import {
   createCreativeWork,
   createEntityScope,
   createEntityRef,
+  createCharacter,
   type UniverseId,
   type WorkId,
   type EntityId,
@@ -75,5 +76,24 @@ describe('compile-time branded identifier safety (verified by `tsc`, exercised a
     const entityId = generateEntityId();
     const ref = createEntityRef({ universeId, entityId, kind: 'character' });
     expect(ref.kind).toBe('character');
+  });
+});
+
+describe('CreativeEntity public contract uses canonical field names only (Directive 003R, section 28)', () => {
+  it('exposes entityId/entityKind/lifecycleState, not the obsolete id/kind/lifecycle', () => {
+    const universeId = generateUniverseId();
+    const scope = createEntityScope({ kind: 'universe', universeId });
+    const character = createCharacter({ scope, name: 'Ada Northwind' });
+
+    expect(character.entityId).toBeDefined();
+    expect(character.entityKind).toBe('character');
+    expect(character.lifecycleState).toBeDefined();
+
+    // @ts-expect-error `id` is not part of the CreativeEntity public contract; use `entityId`
+    expect(character.id).toBeUndefined();
+    // @ts-expect-error `kind` is not part of the CreativeEntity public contract; use `entityKind`
+    expect(character.kind).toBeUndefined();
+    // @ts-expect-error `lifecycle` is not part of the CreativeEntity public contract; use `lifecycleState`
+    expect(character.lifecycle).toBeUndefined();
   });
 });

@@ -1,4 +1,3 @@
-import { DomainValidationError } from '../errors/domain-validation-error.js';
 import type { EntityId } from '../ids/entity-id.js';
 import type { EntityScope } from '../entity/entity-scope.js';
 import {
@@ -7,16 +6,20 @@ import {
   type CreativeEntityLifecycle,
 } from '../entity/entity-identity.js';
 import type { LifecycleState } from '../lifecycle/lifecycle-state.js';
+import type { UtcTimestamp } from '../temporal/utc-timestamp.js';
+import { resolveDisplayText } from '../entity/internal/display-text.js';
 
 /**
  * Foundational CreativeObject — a named, addressable in-universe object
  * (named deliberately `CreativeObject`, not `Object`, to avoid colliding
- * with JavaScript's built-in `Object`). Deliberately NOT implemented
- * (later systems): ownership history, inventory, physical simulation,
- * symbolism, artifact provenance, or item mechanics.
+ * with JavaScript's built-in `Object`; the `EntityKind` literal itself is
+ * the directive-required `'object'` — see `entity/entity-kind.ts`).
+ * Deliberately NOT implemented (later systems): ownership history,
+ * inventory, physical simulation, symbolism, artifact provenance, or
+ * item mechanics. `name` is always identical to
+ * `CreativeEntityIdentity.displayName` (Directive 003R, section 8).
  */
-export interface CreativeObject
-  extends CreativeEntityIdentity<'creative-object'>, CreativeEntityLifecycle {
+export interface CreativeObject extends CreativeEntityIdentity<'object'>, CreativeEntityLifecycle {
   readonly name: string;
   readonly description?: string;
 }
@@ -24,38 +27,41 @@ export interface CreativeObject
 export interface CreateCreativeObjectInput {
   readonly id?: EntityId;
   readonly scope: EntityScope;
-  readonly lifecycle?: LifecycleState;
+  readonly lifecycleState?: LifecycleState;
+  readonly createdAt?: UtcTimestamp | string;
+  readonly updatedAt?: UtcTimestamp | string;
   readonly name: string;
   readonly description?: string;
 }
 
 function resolveName(name: string): string {
-  const trimmed = name.trim();
-  if (trimmed.length === 0) {
-    throw new DomainValidationError(
-      'creative_object.name_empty',
-      'CreativeObject.name must not be empty or whitespace-only.',
-      'name',
-    );
-  }
-  return trimmed;
+  return resolveDisplayText(name, {
+    code: 'creative_object.name_empty',
+    message: 'CreativeObject.name must not be empty or whitespace-only.',
+    field: 'name',
+  });
 }
 
 /**
- * Validates and constructs a well-formed {@link CreativeObject}. Throws
- * {@link DomainValidationError} for an empty/whitespace-only `name` or a
- * malformed `id`/`lifecycle`.
+ * Validates and constructs a well-formed, runtime-frozen {@link
+ * CreativeObject}. Throws {@link DomainValidationError} for an
+ * empty/whitespace-only `name` or a malformed
+ * `id`/`lifecycleState`/`createdAt`/`updatedAt`.
  */
 export function createCreativeObject(input: CreateCreativeObjectInput): CreativeObject {
-  const identity = resolveEntityIdentity('creative-object', {
+  const name = resolveName(input.name);
+  const identity = resolveEntityIdentity('object', {
     ...(input.id !== undefined ? { id: input.id } : {}),
     scope: input.scope,
-    ...(input.lifecycle !== undefined ? { lifecycle: input.lifecycle } : {}),
+    ...(input.lifecycleState !== undefined ? { lifecycleState: input.lifecycleState } : {}),
+    ...(input.createdAt !== undefined ? { createdAt: input.createdAt } : {}),
+    ...(input.updatedAt !== undefined ? { updatedAt: input.updatedAt } : {}),
+    displayName: name,
   });
 
-  return {
+  return Object.freeze({
     ...identity,
-    name: resolveName(input.name),
+    name,
     ...(input.description !== undefined ? { description: input.description } : {}),
-  };
+  });
 }

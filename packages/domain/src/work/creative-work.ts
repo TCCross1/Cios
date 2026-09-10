@@ -2,12 +2,9 @@ import { DomainValidationError } from '../errors/domain-validation-error.js';
 import { generateWorkId, isWorkId, type WorkId } from '../ids/work-id.js';
 import { isUniverseId, type UniverseId } from '../ids/universe-id.js';
 import { assertCreativeFormat, type CreativeFormat } from '../format/creative-format.js';
-import {
-  createUtcTimestamp,
-  isUtcTimestamp,
-  nowAsUtcTimestamp,
-  type UtcTimestamp,
-} from '../temporal/utc-timestamp.js';
+import { resolveLifecycleState, type LifecycleState } from '../lifecycle/lifecycle-state.js';
+import { resolveTimestampPair } from '../temporal/resolve-timestamp-pair.js';
+import type { UtcTimestamp } from '../temporal/utc-timestamp.js';
 
 /**
  * A specific creative work (a novel, a film, a season of television, ...)
@@ -22,6 +19,8 @@ export interface CreativeWork {
   readonly format: CreativeFormat;
   readonly description?: string;
   readonly createdAt: UtcTimestamp;
+  readonly updatedAt: UtcTimestamp;
+  readonly lifecycleState: LifecycleState;
 }
 
 export interface CreateCreativeWorkInput {
@@ -31,6 +30,8 @@ export interface CreateCreativeWorkInput {
   readonly format: CreativeFormat;
   readonly description?: string;
   readonly createdAt?: UtcTimestamp | string;
+  readonly updatedAt?: UtcTimestamp | string;
+  readonly lifecycleState?: LifecycleState;
 }
 
 function resolveTitle(title: string): string {
@@ -70,27 +71,25 @@ function resolveUniverseId(universeId: UniverseId): UniverseId {
   return universeId;
 }
 
-function resolveCreatedAt(createdAt: UtcTimestamp | string | undefined): UtcTimestamp {
-  if (createdAt === undefined) {
-    return nowAsUtcTimestamp();
-  }
-  return isUtcTimestamp(createdAt) ? createdAt : createUtcTimestamp(createdAt);
-}
-
 /**
- * Validates and constructs a well-formed {@link CreativeWork}. Throws
- * {@link DomainValidationError} for a missing/malformed `universeId`, an
- * empty/whitespace-only `title`, an unsupported `format`, or a malformed
- * `id`/`createdAt`.
+ * Validates and constructs a well-formed, runtime-frozen {@link
+ * CreativeWork}. Throws {@link DomainValidationError} for a
+ * missing/malformed `universeId`, an empty/whitespace-only `title`, an
+ * unsupported `format`, a malformed `id`/`createdAt`/`updatedAt`, an
+ * unsupported `lifecycleState`, or an `updatedAt` that precedes
+ * `createdAt`.
  */
 export function createCreativeWork(input: CreateCreativeWorkInput): CreativeWork {
+  const { createdAt, updatedAt } = resolveTimestampPair(input, 'creative_work');
   const work: CreativeWork = {
     id: resolveId(input.id),
     universeId: resolveUniverseId(input.universeId),
     title: resolveTitle(input.title),
     format: assertCreativeFormat(input.format),
-    createdAt: resolveCreatedAt(input.createdAt),
+    createdAt,
+    updatedAt,
+    lifecycleState: resolveLifecycleState(input.lifecycleState),
     ...(input.description !== undefined ? { description: input.description } : {}),
   };
-  return work;
+  return Object.freeze(work);
 }

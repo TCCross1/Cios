@@ -1,6 +1,5 @@
-import { randomUUID } from 'node:crypto';
 import { DomainValidationError } from '../errors/domain-validation-error.js';
-import { isUuidV4 } from './id-format.js';
+import { generateUuidV4, isUuidV4 } from './id-format.js';
 
 declare const workIdBrand: unique symbol;
 
@@ -30,7 +29,7 @@ export function createWorkId(raw: string): WorkId {
 
 /** Generates a new, valid, randomly assigned `WorkId`. */
 export function generateWorkId(): WorkId {
-  return createWorkId(randomUUID());
+  return createWorkId(generateUuidV4());
 }
 
 /** Runtime type guard for `WorkId`. */

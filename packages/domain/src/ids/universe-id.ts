@@ -1,6 +1,5 @@
-import { randomUUID } from 'node:crypto';
 import { DomainValidationError } from '../errors/domain-validation-error.js';
-import { isUuidV4 } from './id-format.js';
+import { generateUuidV4, isUuidV4 } from './id-format.js';
 
 declare const universeIdBrand: unique symbol;
 
@@ -32,7 +31,7 @@ export function createUniverseId(raw: string): UniverseId {
 
 /** Generates a new, valid, randomly assigned `UniverseId`. */
 export function generateUniverseId(): UniverseId {
-  return createUniverseId(randomUUID());
+  return createUniverseId(generateUuidV4());
 }
 
 /** Runtime type guard for `UniverseId`. */

@@ -14,7 +14,8 @@ describe('Location', () => {
   it('constructs a valid location', () => {
     const location = createLocation({ scope, name: 'The Archive' });
     expect(location.name).toBe('The Archive');
-    expect(location.kind).toBe('location');
+    expect(location.entityKind).toBe('location');
+    expect(location.displayName).toBe('The Archive');
   });
 
   it('rejects an empty name', () => {
@@ -43,5 +44,15 @@ describe('Location', () => {
     expect(() =>
       createLocation({ scope, name: 'The Archive', parentLocationId: 'not-an-id' as EntityId }),
     ).toThrow(DomainValidationError);
+  });
+
+  it('is frozen at runtime: direct mutation does not change the constructed value', () => {
+    const location = createLocation({ scope, name: 'The Archive' });
+    expect(Object.isFrozen(location)).toBe(true);
+    expect(() => {
+      // @ts-expect-error Location.name is readonly at compile time too
+      location.name = 'Mutated';
+    }).toThrow(TypeError);
+    expect(location.name).toBe('The Archive');
   });
 });

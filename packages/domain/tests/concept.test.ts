@@ -12,7 +12,8 @@ describe('Concept', () => {
   it('constructs a valid concept', () => {
     const concept = createConcept({ scope, name: 'The Binding Oath' });
     expect(concept.name).toBe('The Binding Oath');
-    expect(concept.kind).toBe('concept');
+    expect(concept.entityKind).toBe('concept');
+    expect(concept.displayName).toBe('The Binding Oath');
   });
 
   it('rejects an empty name', () => {

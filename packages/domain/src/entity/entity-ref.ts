@@ -20,9 +20,9 @@ export interface EntityRef {
 }
 
 /**
- * Validates and constructs a well-formed {@link EntityRef}. Throws {@link
- * DomainValidationError} for any malformed or missing component (never
- * silently drops one).
+ * Validates and constructs a well-formed, runtime-frozen {@link
+ * EntityRef}. Throws {@link DomainValidationError} for any malformed or
+ * missing component (never silently drops one).
  */
 export function createEntityRef(input: {
   readonly universeId: UniverseId;
@@ -51,5 +51,9 @@ export function createEntityRef(input: {
     );
   }
 
-  return { universeId: input.universeId, entityId: input.entityId, kind: input.kind };
+  return Object.freeze({
+    universeId: input.universeId,
+    entityId: input.entityId,
+    kind: input.kind,
+  });
 }

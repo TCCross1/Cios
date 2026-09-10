@@ -18,6 +18,17 @@ import { DomainValidationError } from '../errors/domain-validation-error.js';
  * - `active` — the entity's ordinary working state.
  * - `archived` — retired from active use but retained for history/
  *   reference; not deleted.
+ *
+ * DIRECTIVE 003R JUSTIFICATION FOR RETAINING `draft` (section 11): a
+ * newly created creative object may exist structurally in CIOS before
+ * the creator considers it operationally active — e.g. a newly created
+ * `Character` still being defined, a `CreativeWork` shell created before
+ * active development begins, or a newly entered `Rule` that exists but
+ * has not yet entered ordinary active use. `draft` represents this
+ * ordinary editing/existence maturity, not creative truth or Canon
+ * authority. This does NOT imply `Candidate`, `Canon`, `Rejected`,
+ * `Locked Canon`, or any future Canon-authority state — those remain the
+ * responsibility of a future, entirely separate Canon system (see below).
  */
 export type LifecycleState = 'draft' | 'active' | 'archived';
 

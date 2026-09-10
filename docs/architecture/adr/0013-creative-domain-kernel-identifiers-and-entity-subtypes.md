@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted (amended by Directive 003R — see "Amendment" below).
 
 ## Context
 
@@ -30,28 +30,31 @@ claims `kind: 'character'` but was built by `createTheme`).
    `unique symbol` brand
    (`packages/domain/src/ids/{universe-id,work-id,entity-id}.ts`). They
    are runtime UUID v4 strings (validated via a shared internal regex in
-   `ids/id-format.ts`, generated via Node's built-in `node:crypto`
-   `randomUUID()` — no new dependency), but are not mutually assignable
-   at compile time. Each module exports a `createXId(raw)` validator
-   (throws `DomainValidationError` on a malformed string), a
-   `generateXId()` generator, and an `isXId(value)` runtime type guard.
-   No brand-stripping/unsafe-cast helper is exported — the only supported
-   way to obtain a branded ID is validation or generation.
+   `ids/id-format.ts`, generated via the portable Web Crypto API —
+   `globalThis.crypto.randomUUID()`, accessed through a minimal
+   structural type rather than Node's `node:crypto`; see "Amendment"
+   below), but are not mutually assignable at compile time. Each module
+   exports a `createXId(raw)` validator (throws `DomainValidationError`
+   on a malformed string), a `generateXId()` generator, and an
+   `isXId(value)` runtime type guard. No brand-stripping/unsafe-cast
+   helper is exported — the only supported way to obtain a branded ID is
+   validation or generation.
 
 2. **Entity subtype via a fixed-literal generic + composition, not a
    single object with an optional-kind field.** `CreativeEntityIdentity<TKind
 extends EntityKind>` (`packages/domain/src/entity/entity-identity.ts`)
-   fixes `kind: TKind`. Each concrete entity subtype (e.g. `Character`)
+   fixes `entityKind: TKind` (see "Amendment" below for the field-name
+   correction). Each concrete entity subtype (e.g. `Character`)
    is declared as `interface Character extends
 CreativeEntityIdentity<'character'>, CreativeEntityLifecycle { ... }`.
    Critically, every subtype's construction function (`createCharacter`,
    `createLocation`, ...) hardcodes its own kind literal when calling the
    shared internal `resolveEntityIdentity(kind, input)` helper and does
-   **not** accept a caller-supplied `kind` in its input type at all. This
-   makes "a Character claiming to be a Theme" unrepresentable through any
-   supported construction API, both at compile time (the input type has
-   no `kind` field to override) and at runtime (nothing reads a
-   caller-supplied kind).
+   **not** accept a caller-supplied `entityKind` in its input type at
+   all. This makes "a Character claiming to be a Theme" unrepresentable
+   through any supported construction API, both at compile time (the
+   input type has no `entityKind` field to override) and at runtime
+   (nothing reads a caller-supplied kind).
 
 3. **`EntityScope` and `TemporalReference` are discriminated unions, not
    objects with optional fields.** `EntityScope` is `{ kind: 'universe',
@@ -82,6 +85,56 @@ typecheck` (Vitest's esbuild-based transform does not enforce
   `DomainValidationError` (never returns a partially-valid value or
   silently coerces bad input), keeping error handling uniform across the
   whole domain kernel.
+
+## Amendment (Directive 003R)
+
+Independent verification of the original Directive 003 implementation
+identified defects that this ADR's decisions did not anticipate:
+
+- **Identifier generation portability.** The original implementation
+  generated IDs via `import { randomUUID } from 'node:crypto'`, coupling
+  the domain package (which this ADR and `docs/architecture/CONSTITUTION.md`
+  require to be framework/runtime-independent) to Node.js specifically.
+  This is corrected: `ids/id-format.ts` now generates UUID v4 strings via
+  `globalThis.crypto.randomUUID()`, accessed through a minimal structural
+  type (`{ readonly randomUUID: () => string }`) rather than relying on
+  ambient DOM/Node lib types, so the same code runs unmodified under
+  Node.js, browsers, and other modern JavaScript runtimes that implement
+  Web Crypto. No source file under `packages/domain/src` imports
+  `node:crypto` (or any other `node:`-prefixed module) as of this
+  amendment. Generation throws `DomainValidationError` rather than
+  falling back to a non-cryptographically-secure generator if
+  `globalThis.crypto.randomUUID` is unavailable.
+- **Entity foundation field names.** The original `CreativeEntityIdentity`
+  used the generic field names `id`, `kind`, and (on
+  `CreativeEntityLifecycle`) `lifecycle`. These collided ambiguously with
+  every other identifier-bearing/discriminated concept in the package
+  (`EntityRef.kind`, `UniverseId`/`WorkId`/`EntityId` all informally
+  called "id") and made call sites less self-documenting. They are
+  corrected to `entityId`, `entityKind`, and `lifecycleState`
+  respectively — decision 2 above and this ADR's other references reflect
+  the corrected names. `EntityRef.kind` is deliberately left unchanged
+  (it was already an unambiguous, previously-approved shape; see
+  `docs/architecture/creative-domain-model.md`, "Entity Reference
+  Strategy").
+- **`EntityKind` literal correction.** `'creative-object'` is corrected to
+  `'object'`, matching the plain, one-word naming convention already used
+  by every other kind (`character`, `location`, `faction`, ...); only the
+  `EntityKind` string literal changed — the TypeScript type name
+  `CreativeObject` is unchanged, still avoiding a collision with
+  JavaScript's built-in `Object`.
+- **Runtime immutability.** Every value returned by a `createX`
+  construction function in this package (branded IDs excepted, since they
+  are plain strings) is now passed through `Object.freeze` before being
+  returned, in addition to the compile-time `readonly` fields this ADR
+  already established. This closes a gap the original implementation
+  left open: `readonly` alone is a compile-time-only guarantee and does
+  not prevent runtime mutation via an unchecked cast or plain JavaScript
+  call site.
+
+None of these amendments change the core decisions in this ADR (branded
+identifiers, fixed-literal-generic entity subtypes, discriminated
+unions) — they correct implementation defects within that design.
 
 ## Alternatives Considered
 

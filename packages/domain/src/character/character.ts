@@ -7,11 +7,15 @@ import {
   type CreativeEntityLifecycle,
 } from '../entity/entity-identity.js';
 import type { LifecycleState } from '../lifecycle/lifecycle-state.js';
+import type { UtcTimestamp } from '../temporal/utc-timestamp.js';
+import { resolveDisplayText } from '../entity/internal/display-text.js';
 
 /**
  * Foundational Character. Composes the {@link CreativeEntityIdentity}
  * foundation with only stable, non-speculative content: identity, name,
- * optional aliases, optional short description.
+ * optional aliases, optional short description. `name` is Character's
+ * canonical display field — it is always identical to
+ * `CreativeEntityIdentity.displayName` (Directive 003R, section 8).
  *
  * Deliberately NOT implemented (later systems): Character Consciousness,
  * a psychology model, knowledge states, a goals engine, a secrets engine,
@@ -27,22 +31,20 @@ export interface Character extends CreativeEntityIdentity<'character'>, Creative
 export interface CreateCharacterInput {
   readonly id?: EntityId;
   readonly scope: EntityScope;
-  readonly lifecycle?: LifecycleState;
+  readonly lifecycleState?: LifecycleState;
+  readonly createdAt?: UtcTimestamp | string;
+  readonly updatedAt?: UtcTimestamp | string;
   readonly name: string;
   readonly aliases?: readonly string[];
   readonly description?: string;
 }
 
 function resolveName(name: string): string {
-  const trimmed = name.trim();
-  if (trimmed.length === 0) {
-    throw new DomainValidationError(
-      'character.name_empty',
-      'Character.name must not be empty or whitespace-only.',
-      'name',
-    );
-  }
-  return trimmed;
+  return resolveDisplayText(name, {
+    code: 'character.name_empty',
+    message: 'Character.name must not be empty or whitespace-only.',
+    field: 'name',
+  });
 }
 
 /**
@@ -52,11 +54,14 @@ function resolveName(name: string): string {
  * removed, preserving first-occurrence order. Case is intentionally
  * preserved (never folded) because creative aliases are case-sensitive
  * proper nouns (e.g. "Doc" vs. "DOC" may be meaningfully different
- * in-universe).
+ * in-universe). The returned array is always a fresh, frozen copy — the
+ * caller's original array (if any) is never retained by reference, and
+ * mutating it after construction never affects the constructed
+ * `Character` (Directive 003R, section 12).
  */
 function resolveAliases(aliases: readonly string[] | undefined): readonly string[] {
   if (aliases === undefined) {
-    return [];
+    return Object.freeze([]);
   }
   const normalized: string[] = [];
   const seen = new Set<string>();
@@ -74,25 +79,30 @@ function resolveAliases(aliases: readonly string[] | undefined): readonly string
       normalized.push(trimmed);
     }
   }
-  return normalized;
+  return Object.freeze(normalized);
 }
 
 /**
- * Validates and constructs a well-formed {@link Character}. Throws {@link
- * DomainValidationError} for an empty/whitespace-only `name`, an
- * empty/whitespace-only alias, or a malformed `id`/`lifecycle`.
+ * Validates and constructs a well-formed, runtime-frozen {@link
+ * Character}. Throws {@link DomainValidationError} for an
+ * empty/whitespace-only `name`, an empty/whitespace-only alias, or a
+ * malformed `id`/`lifecycleState`/`createdAt`/`updatedAt`.
  */
 export function createCharacter(input: CreateCharacterInput): Character {
+  const name = resolveName(input.name);
   const identity = resolveEntityIdentity('character', {
     ...(input.id !== undefined ? { id: input.id } : {}),
     scope: input.scope,
-    ...(input.lifecycle !== undefined ? { lifecycle: input.lifecycle } : {}),
+    ...(input.lifecycleState !== undefined ? { lifecycleState: input.lifecycleState } : {}),
+    ...(input.createdAt !== undefined ? { createdAt: input.createdAt } : {}),
+    ...(input.updatedAt !== undefined ? { updatedAt: input.updatedAt } : {}),
+    displayName: name,
   });
 
-  return {
+  return Object.freeze({
     ...identity,
-    name: resolveName(input.name),
+    name,
     aliases: resolveAliases(input.aliases),
     ...(input.description !== undefined ? { description: input.description } : {}),
-  };
+  });
 }

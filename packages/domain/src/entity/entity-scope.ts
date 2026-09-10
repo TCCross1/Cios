@@ -34,9 +34,10 @@ export interface WorkEntityScope {
 export type EntityScope = UniverseEntityScope | WorkEntityScope;
 
 /**
- * Validates and normalizes `input` into a well-formed {@link EntityScope}.
- * Throws {@link DomainValidationError} for an unrecognized discriminant or
- * a malformed/missing identifier component (never silently drops one).
+ * Validates and normalizes `input` into a well-formed, runtime-frozen
+ * {@link EntityScope}. Throws {@link DomainValidationError} for an
+ * unrecognized discriminant or a malformed/missing identifier component
+ * (never silently drops one).
  */
 export function createEntityScope(
   input:
@@ -53,7 +54,7 @@ export function createEntityScope(
 
   switch (input.kind) {
     case 'universe':
-      return { kind: 'universe', universeId: input.universeId };
+      return Object.freeze({ kind: 'universe', universeId: input.universeId });
     case 'work': {
       if (!isWorkId(input.workId)) {
         throw new DomainValidationError(
@@ -62,7 +63,7 @@ export function createEntityScope(
           'workId',
         );
       }
-      return { kind: 'work', universeId: input.universeId, workId: input.workId };
+      return Object.freeze({ kind: 'work', universeId: input.universeId, workId: input.workId });
     }
     default: {
       const unreachable: never = input;

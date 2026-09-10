@@ -67,9 +67,9 @@ export function createTemporalReference(
   switch (input.kind) {
     case 'exact': {
       if (isUtcTimestamp(input.timestamp)) {
-        return { kind: 'exact', timestamp: input.timestamp };
+        return Object.freeze({ kind: 'exact', timestamp: input.timestamp });
       }
-      return { kind: 'exact', timestamp: createUtcTimestamp(input.timestamp) };
+      return Object.freeze({ kind: 'exact', timestamp: createUtcTimestamp(input.timestamp) });
     }
     case 'textual': {
       const value = input.value.trim();
@@ -80,7 +80,7 @@ export function createTemporalReference(
           'value',
         );
       }
-      return { kind: 'textual', value };
+      return Object.freeze({ kind: 'textual', value });
     }
     case 'relative': {
       const label = input.label.trim();
@@ -91,10 +91,10 @@ export function createTemporalReference(
           'label',
         );
       }
-      return { kind: 'relative', label };
+      return Object.freeze({ kind: 'relative', label });
     }
     case 'unknown':
-      return { kind: 'unknown' };
+      return Object.freeze({ kind: 'unknown' });
     default: {
       const unreachable: never = input;
       throw new DomainValidationError(

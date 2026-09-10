@@ -6,31 +6,47 @@ import { DomainValidationError } from '../errors/domain-validation-error.js';
  * must know exactly what formats it understands rather than accepting an
  * arbitrary string.
  *
- * This set mirrors the media CIOS's master context names as in-scope
- * (novels, feature films, television, sitcoms, animation, narrative
- * games, RPGs, graphic narratives). "Future creative formats" are added
- * by deliberately extending this union and `CREATIVE_FORMATS` in a later
- * directive — never by widening this type to a bare `string`.
+ * This set mirrors the media CIOS's master context names as in-scope:
+ * novels, feature films, television series, sitcoms, animation, narrative
+ * games, role-playing games, graphic narratives, audio formats
+ * (audiobooks/audio drama), interactive/branching formats, and `other`
+ * for a creative work whose medium does not yet map to one of these
+ * literals. "Future creative formats" are added by deliberately
+ * extending this union and `CREATIVE_FORMATS` in a later directive —
+ * never by widening this type to a bare `string`.
+ *
+ * This is the exact, canonical vocabulary required by Directive 003 (as
+ * remediated by Directive 003R). There are no aliases: earlier,
+ * unauthorized abbreviations (`television`, `rpg`) are not accepted —
+ * there are no production consumers of this package yet, so a single
+ * clean vocabulary is preferred over preserving a second, competing set
+ * of literals.
  */
 export type CreativeFormat =
   | 'novel'
   | 'feature-film'
-  | 'television'
+  | 'television-series'
   | 'sitcom'
   | 'animation'
   | 'narrative-game'
-  | 'rpg'
-  | 'graphic-narrative';
+  | 'role-playing-game'
+  | 'graphic-narrative'
+  | 'audio'
+  | 'interactive'
+  | 'other';
 
 const CREATIVE_FORMATS: ReadonlySet<CreativeFormat> = new Set([
   'novel',
   'feature-film',
-  'television',
+  'television-series',
   'sitcom',
   'animation',
   'narrative-game',
-  'rpg',
+  'role-playing-game',
   'graphic-narrative',
+  'audio',
+  'interactive',
+  'other',
 ]);
 
 /** Runtime type guard for `CreativeFormat`. */

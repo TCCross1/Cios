@@ -57,4 +57,14 @@ describe('TemporalReference', () => {
       }),
     ).toThrow(DomainValidationError);
   });
+
+  it('is frozen at runtime: cannot be mutated after creation', () => {
+    const ref = createTemporalReference({ kind: 'textual', value: 'the first age' });
+    expect(Object.isFrozen(ref)).toBe(true);
+    expect(() => {
+      // @ts-expect-error TemporalReference.value is readonly at compile time too
+      ref.value = 'mutated';
+    }).toThrow(TypeError);
+    expect(ref).toEqual({ kind: 'textual', value: 'the first age' });
+  });
 });

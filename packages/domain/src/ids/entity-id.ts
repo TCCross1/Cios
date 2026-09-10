@@ -1,6 +1,5 @@
-import { randomUUID } from 'node:crypto';
 import { DomainValidationError } from '../errors/domain-validation-error.js';
-import { isUuidV4 } from './id-format.js';
+import { generateUuidV4, isUuidV4 } from './id-format.js';
 
 declare const entityIdBrand: unique symbol;
 
@@ -31,7 +30,7 @@ export function createEntityId(raw: string): EntityId {
 
 /** Generates a new, valid, randomly assigned `EntityId`. */
 export function generateEntityId(): EntityId {
-  return createEntityId(randomUUID());
+  return createEntityId(generateUuidV4());
 }
 
 /** Runtime type guard for `EntityId`. */

@@ -12,6 +12,8 @@ describe('CreativeEvent', () => {
   it('constructs a valid event without temporal information', () => {
     const event = createCreativeEvent({ scope, title: 'The Long Winter Begins' });
     expect(event.title).toBe('The Long Winter Begins');
+    expect(event.displayName).toBe('The Long Winter Begins');
+    expect(event.entityKind).toBe('event');
     expect(event.temporalReference).toBeUndefined();
   });
 
@@ -69,5 +71,20 @@ describe('CreativeEvent', () => {
         temporalReference: { kind: 'exact', timestamp: 'not-a-real-timestamp' },
       }),
     ).toThrow(DomainValidationError);
+  });
+
+  it('is frozen at runtime, including its temporalReference variant', () => {
+    const event = createCreativeEvent({
+      scope,
+      title: 'The Founding',
+      temporalReference: { kind: 'textual', value: 'the first age' },
+    });
+    expect(Object.isFrozen(event)).toBe(true);
+    expect(Object.isFrozen(event.temporalReference)).toBe(true);
+    expect(() => {
+      // @ts-expect-error CreativeEvent.title is readonly at compile time too
+      event.title = 'Mutated';
+    }).toThrow(TypeError);
+    expect(event.title).toBe('The Founding');
   });
 });

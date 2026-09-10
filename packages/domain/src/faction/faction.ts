@@ -1,4 +1,3 @@
-import { DomainValidationError } from '../errors/domain-validation-error.js';
 import type { EntityId } from '../ids/entity-id.js';
 import type { EntityScope } from '../entity/entity-scope.js';
 import {
@@ -7,6 +6,8 @@ import {
   type CreativeEntityLifecycle,
 } from '../entity/entity-identity.js';
 import type { LifecycleState } from '../lifecycle/lifecycle-state.js';
+import type { UtcTimestamp } from '../temporal/utc-timestamp.js';
+import { resolveDisplayText } from '../entity/internal/display-text.js';
 
 /**
  * Foundational Faction.
@@ -31,7 +32,8 @@ import type { LifecycleState } from '../lifecycle/lifecycle-state.js';
  *
  * Deliberately NOT implemented (later systems): membership tracking,
  * hierarchy/rank structure, inter-faction relationships/conflict,
- * resources, or goals.
+ * resources, or goals. `name` is always identical to
+ * `CreativeEntityIdentity.displayName` (Directive 003R, section 8).
  */
 export interface Faction extends CreativeEntityIdentity<'faction'>, CreativeEntityLifecycle {
   readonly name: string;
@@ -41,38 +43,40 @@ export interface Faction extends CreativeEntityIdentity<'faction'>, CreativeEnti
 export interface CreateFactionInput {
   readonly id?: EntityId;
   readonly scope: EntityScope;
-  readonly lifecycle?: LifecycleState;
+  readonly lifecycleState?: LifecycleState;
+  readonly createdAt?: UtcTimestamp | string;
+  readonly updatedAt?: UtcTimestamp | string;
   readonly name: string;
   readonly description?: string;
 }
 
 function resolveName(name: string): string {
-  const trimmed = name.trim();
-  if (trimmed.length === 0) {
-    throw new DomainValidationError(
-      'faction.name_empty',
-      'Faction.name must not be empty or whitespace-only.',
-      'name',
-    );
-  }
-  return trimmed;
+  return resolveDisplayText(name, {
+    code: 'faction.name_empty',
+    message: 'Faction.name must not be empty or whitespace-only.',
+    field: 'name',
+  });
 }
 
 /**
- * Validates and constructs a well-formed {@link Faction}. Throws {@link
- * DomainValidationError} for an empty/whitespace-only `name` or a
- * malformed `id`/`lifecycle`.
+ * Validates and constructs a well-formed, runtime-frozen {@link Faction}.
+ * Throws {@link DomainValidationError} for an empty/whitespace-only
+ * `name` or a malformed `id`/`lifecycleState`/`createdAt`/`updatedAt`.
  */
 export function createFaction(input: CreateFactionInput): Faction {
+  const name = resolveName(input.name);
   const identity = resolveEntityIdentity('faction', {
     ...(input.id !== undefined ? { id: input.id } : {}),
     scope: input.scope,
-    ...(input.lifecycle !== undefined ? { lifecycle: input.lifecycle } : {}),
+    ...(input.lifecycleState !== undefined ? { lifecycleState: input.lifecycleState } : {}),
+    ...(input.createdAt !== undefined ? { createdAt: input.createdAt } : {}),
+    ...(input.updatedAt !== undefined ? { updatedAt: input.updatedAt } : {}),
+    displayName: name,
   });
 
-  return {
+  return Object.freeze({
     ...identity,
-    name: resolveName(input.name),
+    name,
     ...(input.description !== undefined ? { description: input.description } : {}),
-  };
+  });
 }

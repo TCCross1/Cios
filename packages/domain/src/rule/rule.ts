@@ -1,4 +1,3 @@
-import { DomainValidationError } from '../errors/domain-validation-error.js';
 import type { EntityId } from '../ids/entity-id.js';
 import type { EntityScope } from '../entity/entity-scope.js';
 import {
@@ -7,6 +6,8 @@ import {
   type CreativeEntityLifecycle,
 } from '../entity/entity-identity.js';
 import type { LifecycleState } from '../lifecycle/lifecycle-state.js';
+import type { UtcTimestamp } from '../temporal/utc-timestamp.js';
+import { resolveDisplayText } from '../entity/internal/display-text.js';
 
 /**
  * Foundational Rule — a meaningful world, narrative, or creator-defined
@@ -19,7 +20,9 @@ import type { LifecycleState } from '../lifecycle/lifecycle-state.js';
  * Rule is authoritative creative truth is entirely the responsibility of
  * a future, separate Canon authority system layered on top of entities
  * that already exist, never merged into the entity itself. See
- * `docs/architecture/creative-domain-model.md`.
+ * `docs/architecture/creative-domain-model.md`. `name` is always
+ * identical to `CreativeEntityIdentity.displayName` (Directive 003R,
+ * section 8).
  */
 export interface Rule extends CreativeEntityIdentity<'rule'>, CreativeEntityLifecycle {
   readonly name: string;
@@ -29,38 +32,40 @@ export interface Rule extends CreativeEntityIdentity<'rule'>, CreativeEntityLife
 export interface CreateRuleInput {
   readonly id?: EntityId;
   readonly scope: EntityScope;
-  readonly lifecycle?: LifecycleState;
+  readonly lifecycleState?: LifecycleState;
+  readonly createdAt?: UtcTimestamp | string;
+  readonly updatedAt?: UtcTimestamp | string;
   readonly name: string;
   readonly description?: string;
 }
 
 function resolveName(name: string): string {
-  const trimmed = name.trim();
-  if (trimmed.length === 0) {
-    throw new DomainValidationError(
-      'rule.name_empty',
-      'Rule.name must not be empty or whitespace-only.',
-      'name',
-    );
-  }
-  return trimmed;
+  return resolveDisplayText(name, {
+    code: 'rule.name_empty',
+    message: 'Rule.name must not be empty or whitespace-only.',
+    field: 'name',
+  });
 }
 
 /**
- * Validates and constructs a well-formed {@link Rule}. Throws {@link
- * DomainValidationError} for an empty/whitespace-only `name` or a
- * malformed `id`/`lifecycle`.
+ * Validates and constructs a well-formed, runtime-frozen {@link Rule}.
+ * Throws {@link DomainValidationError} for an empty/whitespace-only
+ * `name` or a malformed `id`/`lifecycleState`/`createdAt`/`updatedAt`.
  */
 export function createRule(input: CreateRuleInput): Rule {
+  const name = resolveName(input.name);
   const identity = resolveEntityIdentity('rule', {
     ...(input.id !== undefined ? { id: input.id } : {}),
     scope: input.scope,
-    ...(input.lifecycle !== undefined ? { lifecycle: input.lifecycle } : {}),
+    ...(input.lifecycleState !== undefined ? { lifecycleState: input.lifecycleState } : {}),
+    ...(input.createdAt !== undefined ? { createdAt: input.createdAt } : {}),
+    ...(input.updatedAt !== undefined ? { updatedAt: input.updatedAt } : {}),
+    displayName: name,
   });
 
-  return {
+  return Object.freeze({
     ...identity,
-    name: resolveName(input.name),
+    name,
     ...(input.description !== undefined ? { description: input.description } : {}),
-  };
+  });
 }
