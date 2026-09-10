@@ -4,6 +4,16 @@ Use-case orchestration across domain concerns. The application layer coordinates
 
 ## Status
 
-Architecture foundation only (Directive 002). This package intentionally
-contains no product logic. See `docs/architecture/CONSTITUTION.md` and the
-ADRs in `docs/architecture/adr/` for the reasoning behind this boundary.
+Directive 005: implements the first real product logic in this package —
+the Spark Engine (`src/spark/`): immutable capture of a creator's raw
+inspiration or an imported reference (`SparkId`, `SparkRef`,
+`SparkModality` (`text` | `voice` | `image` | `link` | `file`),
+`SparkSource`, `Spark`, `captureSpark`). See
+`docs/architecture/spark-engine.md` for the full model and
+`docs/architecture/adr/0015-*.md` for the governing decisions.
+
+This package still does **not** implement the Interpretation Engine, the
+Canon Ledger, the Creation Graph engine, persistence, AI invocation, or
+any product API/UI logic — see `docs/architecture/CONSTITUTION.md` and
+the ADRs in `docs/architecture/adr/` for the reasoning behind this
+boundary.

@@ -22,3 +22,4 @@ rather than editing history.
 | [0012](./0012-realtime-collaboration-deferred.md)                        | Realtime collaboration deferred                                                            |
 | [0013](./0013-creative-domain-kernel-identifiers-and-entity-subtypes.md) | Branded identifiers and entity subtype discriminated unions for the Creative Domain Kernel |
 | [0014](./0014-provenance-lineage-model.md)                               | Provenance lineage model: immutable lineage records separate from Canon/authority          |
+| [0015](./0015-spark-immutable-source-boundary.md)                        | Spark Engine: immutable raw inspiration capture, separate from interpretation/Canon        |
