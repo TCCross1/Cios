@@ -18,6 +18,65 @@ describe('ExternalSourceRef', () => {
     );
   });
 
+  describe('http/https acceptance (Directive 004R)', () => {
+    it.each([
+      'https://example.com',
+      'http://example.com/path',
+      'https://example.com/path?x=1#section',
+      'https://sub.example.com/resource',
+    ])('accepts %s', (locator) => {
+      const source = createExternalSourceRef({ sourceKind: 'url', locator });
+      expect(source.sourceKind).toBe('url');
+      expect(source.locator).toBe(locator);
+    });
+  });
+
+  describe('non-web scheme rejection (Directive 004R)', () => {
+    it.each([
+      'javascript:alert(1)',
+      'data:text/plain,hello',
+      'file:///tmp/example',
+      'ftp://example.com',
+      'mailto:test@example.com',
+      'example.com',
+      '//example.com',
+      'not a url',
+      '',
+    ])('rejects %s', (locator) => {
+      expect(() => createExternalSourceRef({ sourceKind: 'url', locator })).toThrow(
+        DomainValidationError,
+      );
+    });
+  });
+
+  describe('non-url source kinds are unaffected by the http/https restriction (Directive 004R)', () => {
+    it('accepts an opaque non-http(s) "file" locator', () => {
+      const source = createExternalSourceRef({
+        sourceKind: 'file',
+        locator: 'asset://future-file-reference',
+      });
+      expect(source.sourceKind).toBe('file');
+      expect(source.locator).toBe('asset://future-file-reference');
+    });
+
+    it('accepts an opaque "publication" locator', () => {
+      const source = createExternalSourceRef({
+        sourceKind: 'publication',
+        locator: 'ISBN 978-3-16-148410-0',
+      });
+      expect(source.sourceKind).toBe('publication');
+    });
+
+    it('accepts an opaque "other" locator', () => {
+      const source = createExternalSourceRef({
+        sourceKind: 'other',
+        locator: 'archive-reference-17',
+      });
+      expect(source.sourceKind).toBe('other');
+      expect(source.locator).toBe('archive-reference-17');
+    });
+  });
+
   it('accepts a valid file opaque locator', () => {
     const source = createExternalSourceRef({
       sourceKind: 'file',

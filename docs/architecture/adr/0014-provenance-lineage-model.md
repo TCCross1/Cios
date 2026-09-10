@@ -1,8 +1,9 @@
-# 0014. Provenance Foundation: Immutable Lineage Records Separate from Canon/Authority
+# 0014. Provenance Lineage Model: Immutable Lineage Records Separate from Canon/Authority
 
 ## Status
 
-Accepted.
+Accepted. Amended by Directive 004R (URL source-scheme restriction,
+`ProvenanceContributorKind` rename, this filename).
 
 ## Context
 
@@ -119,6 +120,52 @@ universeId, provenanceId }`) pointing at it, never the reverse.
     `@cios/domain` — otherwise `@ts-expect-error` assertions in
     `tests/type-safety.test.ts` and elsewhere would never actually be
     checked by `pnpm typecheck`.
+
+12. **(Directive 004R) `sourceKind: "url"` locators must be absolute
+    `http:`/`https:` web-reference URLs**, checked by parsing with the
+    platform `URL` constructor and comparing `.protocol` exactly against
+    an `http:`/`https:` allow-list — never a `startsWith`-style
+    string-prefix check, which can misclassify malformed values. Schemes
+    such as `javascript:`, `data:`, `file:`, `ftp:`, and `mailto:` are
+    rejected for `sourceKind: "url"`. This is deterministic locator
+    validation only: it performs no DNS, network, fetch, or
+    content-safety check, and a successfully-validated `url` locator is
+    not thereby known to be safe, trustworthy, or reachable. No alias or
+    backward-compatibility scheme was retained. No broader URL
+    canonicalization (default ports, trailing-slash semantics, hostname
+    case, query-parameter order, fragments, percent-encoding) was
+    introduced; those remain separate, deliberately deferred
+    canonicalization questions that could affect provenance
+    identity/duplicate semantics. `file`, `publication`, and `other`
+    locators remain unaffected opaque, trimmed, non-empty strings.
+
+13. **(Directive 004R) The public contributor-classification type is
+    named `ProvenanceContributorKind`** (`'creator' | 'ai'`), not the
+    previously-used `ContributorKind` — no backward-compatible alias was
+    retained, since there are no production downstream consumers. The
+    `contributorKind` field name is unchanged. Contributor classification
+    is **provider-independent**: `ProvenanceContributorKind` only
+    distinguishes a human creator from an AI contribution in the
+    abstract; it never encodes a specific AI vendor, model, or provider
+    identity, and `contributorRef` remains an opaque, unresolved
+    identifier.
+
+14. **Every `ProvenanceRecord` (and its nested `ProvenanceContributorRef`/
+    `ExternalSourceRef`/`ProvenanceRef` values) is JSON-safe** — every
+    field is a plain string, branded string, or a `readonly` array/object
+    composed of those — and **runtime-frozen** (`Object.freeze`, not just
+    a `readonly` compile-time annotation) at construction, in addition to
+    caller-reference isolation (item 8, above).
+
+15. **No durable persistence ledger, and no hash chain / Merkle tree /
+    cryptographic lineage chain, exists yet.** `@cios/provenance` records
+    a single immutable point-in-time lineage fact in memory; it does not
+    persist records, does not chain records together cryptographically,
+    and does not compute or verify any hash over a record or its
+    ancestry. A durable, queryable, tamper-evident Provenance Ledger —
+    and any hash-chain/Merkle-tree lineage-integrity mechanism it might
+    need — is explicitly deferred to a future Provenance Ledger
+    directive; this ADR does not design it in advance.
 
 ## Consequences
 

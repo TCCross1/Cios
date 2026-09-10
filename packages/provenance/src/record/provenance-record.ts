@@ -17,7 +17,7 @@ import { isProvenanceType, type ProvenanceType } from '../types/provenance-type.
 import {
   createProvenanceContributorRef,
   normalizeContributorRef,
-  type ContributorKind,
+  type ProvenanceContributorKind,
   type ProvenanceContributorRef,
 } from '../contributors/provenance-contributor.js';
 import { createProvenanceRef, type ProvenanceRef } from '../references/provenance-ref.js';
@@ -56,7 +56,7 @@ export interface CreateProvenanceRecordInput {
   readonly universeId: UniverseId | string;
   readonly provenanceType: ProvenanceType;
   readonly contributors?: readonly {
-    readonly contributorKind: ContributorKind;
+    readonly contributorKind: ProvenanceContributorKind;
     readonly contributorRef: string;
   }[];
   readonly parents?: readonly {
@@ -174,7 +174,7 @@ function resolveParents(
 
 function countByKind(
   contributors: readonly ProvenanceContributorRef[],
-  kind: ContributorKind,
+  kind: ProvenanceContributorKind,
 ): number {
   return contributors.filter((contributor) => contributor.contributorKind === kind).length;
 }

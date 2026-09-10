@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createProvenanceRecord } from '../src/index.js';
+import { createProvenanceRecord, type ProvenanceContributorKind } from '../src/index.js';
 import { generateUniverseId } from '@cios/domain';
 
 describe('ProvenanceRecord: compile-time type safety', () => {
@@ -45,5 +45,21 @@ describe('ProvenanceRecord: compile-time type safety', () => {
       // @ts-expect-error record.contributors is a readonly array at compile time
       record.contributors.push({ contributorKind: 'ai', contributorRef: 'model-1' });
     }).toThrow(TypeError);
+  });
+
+  it('exports ProvenanceContributorKind and rejects the obsolete ContributorKind name (Directive 004R)', async () => {
+    const provenanceModule = await import('../src/index.js');
+    const value: ProvenanceContributorKind = 'creator';
+    expect(['creator', 'ai']).toContain(value);
+    expect(provenanceModule.isProvenanceContributorKind('creator')).toBe(true);
+
+    // @ts-expect-error `ContributorKind` is not exported from the public API — only
+    // `ProvenanceContributorKind` is the supported name (Directive 004R).
+    const obsolete: ContributorKind = 'creator';
+    expect(obsolete).toBe('creator');
+
+    // @ts-expect-error `isContributorKind` is not exported from the public API — only
+    // `isProvenanceContributorKind` is the supported name (Directive 004R).
+    expect(provenanceModule.isContributorKind).toBeUndefined();
   });
 });

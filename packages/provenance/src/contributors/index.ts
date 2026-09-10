@@ -8,8 +8,8 @@
  * and `record/provenance-record.ts`.
  */
 export {
-  type ContributorKind,
-  isContributorKind,
+  type ProvenanceContributorKind,
+  isProvenanceContributorKind,
   type ProvenanceContributorRef,
   createProvenanceContributorRef,
 } from './provenance-contributor.js';

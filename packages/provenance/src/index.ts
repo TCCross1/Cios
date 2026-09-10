@@ -35,8 +35,8 @@ export { type ProvenanceType, isProvenanceType, createProvenanceType } from './t
 
 // Contributors
 export {
-  type ContributorKind,
-  isContributorKind,
+  type ProvenanceContributorKind,
+  isProvenanceContributorKind,
   type ProvenanceContributorRef,
   createProvenanceContributorRef,
 } from './contributors/index.js';

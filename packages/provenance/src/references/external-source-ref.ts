@@ -33,11 +33,18 @@ export interface ExternalSourceRef {
   readonly label?: string;
 }
 
-function isSyntacticallyValidUrl(value: string): boolean {
+/** Absolute URL protocols accepted for `sourceKind: "url"` locators. */
+const ALLOWED_URL_PROTOCOLS: ReadonlySet<string> = new Set(['http:', 'https:']);
+
+/**
+ * `sourceKind: "url"` locators must be absolute `http:`/`https:`
+ * web-reference URLs. This is deterministic locator validation only — it
+ * never performs DNS, network, or content-safety checks, and never
+ * infers whether the remote resource exists, is safe, or is trustworthy.
+ */
+function hasAllowedUrlProtocol(value: string): boolean {
   try {
-    // Syntax validation only — this never performs network access.
-    new URL(value);
-    return true;
+    return ALLOWED_URL_PROTOCOLS.has(new URL(value).protocol);
   } catch {
     return false;
   }
@@ -69,10 +76,10 @@ export function createExternalSourceRef(input: {
     );
   }
   const trimmedLocator = input.locator.trim();
-  if (input.sourceKind === 'url' && !isSyntacticallyValidUrl(trimmedLocator)) {
+  if (input.sourceKind === 'url' && !hasAllowedUrlProtocol(trimmedLocator)) {
     throw new DomainValidationError(
       'external_source.locator_malformed_url',
-      `ExternalSourceRef.locator must be a syntactically valid URL when sourceKind is "url", received: ${JSON.stringify(input.locator)}.`,
+      `ExternalSourceRef.locator must be an absolute "http:" or "https:" URL when sourceKind is "url", received: ${JSON.stringify(input.locator)}.`,
       'locator',
     );
   }

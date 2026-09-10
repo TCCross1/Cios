@@ -57,17 +57,27 @@ An exact 7-value union — no synonym is ever accepted:
 
 ### `ProvenanceContributorRef`
 
-`{ contributorKind: 'creator' | 'ai', contributorRef: string }` — an
-opaque, trimmed, non-empty identifier for who contributed. This package
-does not resolve `contributorRef` to an actual account/model identity;
-that resolution is out of scope for this foundation.
+`{ contributorKind: ProvenanceContributorKind, contributorRef: string }`
+where `ProvenanceContributorKind` is `'creator' | 'ai'` — an opaque,
+trimmed, non-empty identifier for who contributed. Contributor
+classification is provider-independent: this package does not resolve
+`contributorRef` to an actual account/model identity, and does not
+encode any particular AI provider or vendor; that resolution is out of
+scope for this foundation.
 
 ### `ExternalSourceRef`
 
 `{ sourceKind: 'url' | 'file' | 'publication' | 'other', locator:
-string, label?: string }` — a syntactically-validated (for `url`) or
-opaque non-empty (for other kinds) pointer to external material.
-Validation is syntax-only; no network or filesystem access is performed.
+string, label?: string }` — a validated pointer to external material.
+For `sourceKind: 'url'`, the locator must be an absolute `http:` or
+`https:` web-reference URL (parsed with the platform `URL` parser and
+checked by exact protocol — no other scheme is accepted). For `file`,
+`publication`, and `other`, the locator is treated as an opaque,
+trimmed, non-empty string. Validation is deterministic and syntax-only;
+no network, DNS, or filesystem access is performed, and a
+successfully-validated `url` locator is **not** thereby known to be
+safe, trustworthy, or reachable — only its reference scheme is
+constrained.
 
 ### `ProvenanceRef`
 
@@ -156,5 +166,5 @@ Graph engine; the Spark Engine; the Interpretation Engine; Story Genome;
 Creator Intent; Muse; Creative Chief; AI invocation/providers;
 persistence/repositories/a database; a product API or UI; authentication;
 billing; Production Studios; or the Adaptation Engine. See
-`docs/architecture/adr/0014-provenance-foundation.md` for the reasoning
+`docs/architecture/adr/0014-provenance-lineage-model.md` for the reasoning
 behind these boundaries.

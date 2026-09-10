@@ -8,8 +8,9 @@ Directive 004: implements the foundational Provenance model —
 `ProvenanceId` (branded, UUID v4), `ProvenanceType` (a fixed 7-value
 union: `creator-original`, `ai-interpretation`, `ai-suggestion`,
 `ai-expansion`, `ai-revision`, `hybrid`, `imported-reference`),
-`ProvenanceContributorRef` (`creator` | `ai`), `ExternalSourceRef`
-(`url` | `file` | `publication` | `other`), `ProvenanceRef` (`{
+`ProvenanceContributorRef` (`ProvenanceContributorKind`: `creator` |
+`ai`), `ExternalSourceRef` (`url` — `http:`/`https:` only | `file` |
+`publication` | `other`), `ProvenanceRef` (`{
 universeId, provenanceId }`), and `ProvenanceRecord`. Every construction
 function returns a runtime-frozen value, identifier generation uses the
 portable Web Crypto API (`globalThis.crypto`, not `node:crypto`), and

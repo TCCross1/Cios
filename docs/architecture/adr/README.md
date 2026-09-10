@@ -21,4 +21,4 @@ rather than editing history.
 | [0011](./0011-authentication-separated-from-authorization.md)            | Authentication separated from authorization                                                |
 | [0012](./0012-realtime-collaboration-deferred.md)                        | Realtime collaboration deferred                                                            |
 | [0013](./0013-creative-domain-kernel-identifiers-and-entity-subtypes.md) | Branded identifiers and entity subtype discriminated unions for the Creative Domain Kernel |
-| [0014](./0014-provenance-foundation.md)                                  | Provenance foundation: immutable lineage records separate from Canon/authority             |
+| [0014](./0014-provenance-lineage-model.md)                               | Provenance lineage model: immutable lineage records separate from Canon/authority          |

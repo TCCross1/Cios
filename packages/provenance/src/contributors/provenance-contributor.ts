@@ -2,17 +2,19 @@ import { DomainValidationError } from '@cios/domain';
 
 /**
  * Who materially contributed to a piece of lineage — never *how good*,
- * *approved*, or *authoritative* that contribution is. `ContributorKind`
+ * *approved*, or *authoritative* that contribution is. `ProvenanceContributorKind`
  * distinguishes a human creator's authorship from an AI system's
  * authorship; it does not identify a specific person or model.
  */
-export type ContributorKind = 'creator' | 'ai';
+export type ProvenanceContributorKind = 'creator' | 'ai';
 
-const CONTRIBUTOR_KINDS: readonly ContributorKind[] = ['creator', 'ai'];
+const PROVENANCE_CONTRIBUTOR_KINDS: readonly ProvenanceContributorKind[] = ['creator', 'ai'];
 
-/** Runtime type guard for `ContributorKind`. */
-export function isContributorKind(value: unknown): value is ContributorKind {
-  return typeof value === 'string' && (CONTRIBUTOR_KINDS as readonly string[]).includes(value);
+/** Runtime type guard for `ProvenanceContributorKind`. */
+export function isProvenanceContributorKind(value: unknown): value is ProvenanceContributorKind {
+  return (
+    typeof value === 'string' && (PROVENANCE_CONTRIBUTOR_KINDS as readonly string[]).includes(value)
+  );
 }
 
 /**
@@ -25,7 +27,7 @@ export function isContributorKind(value: unknown): value is ContributorKind {
  * foundation.
  */
 export interface ProvenanceContributorRef {
-  readonly contributorKind: ContributorKind;
+  readonly contributorKind: ProvenanceContributorKind;
   readonly contributorRef: string;
 }
 
@@ -36,10 +38,10 @@ export interface ProvenanceContributorRef {
  * being stored.
  */
 export function createProvenanceContributorRef(input: {
-  readonly contributorKind: ContributorKind;
+  readonly contributorKind: ProvenanceContributorKind;
   readonly contributorRef: string;
 }): ProvenanceContributorRef {
-  if (!isContributorKind(input.contributorKind)) {
+  if (!isProvenanceContributorKind(input.contributorKind)) {
     throw new DomainValidationError(
       'provenance_contributor.contributor_kind_invalid',
       `ProvenanceContributorRef.contributorKind must be "creator" or "ai", received: ${JSON.stringify(input.contributorKind)}.`,
