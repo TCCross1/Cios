@@ -2,7 +2,7 @@
   "name": "@cios/provenance",
   "version": "0.1.0",
   "private": true,
-  "description": "CIOS provenance package (architecture foundation only, Directive 002).",
+  "description": "CIOS provenance package: immutable lineage/provenance model (Directive 004).",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.tests.json --noEmit"
   },
   "dependencies": {
     "@cios/domain": "workspace:*"
