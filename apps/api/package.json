@@ -1,0 +1,20 @@
+{
+  "name": "@cios/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CIOS interactive API runtime (Fastify). Architecture foundation only, Directive 002 — no product endpoints.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "fastify": "5.12.3",
+    "@cios/application": "workspace:*",
+    "@cios/infrastructure": "workspace:*",
+    "@cios/contracts": "workspace:*",
+    "@cios/config": "workspace:*"
+  }
+}
